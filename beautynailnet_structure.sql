@@ -1,11 +1,5 @@
--- phpMyAdmin SQL Dump
--- version 5.2.2
--- https://www.phpmyadmin.net/
---
--- Host: mysql
--- Generation Time: Jul 11, 2025 at 02:14 AM
--- Server version: 8.0.42
--- PHP Version: 8.2.27
+
+
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -20,7 +14,8 @@ SET time_zone = "+00:00";
 --
 -- Database: `beautynailnet`
 --
-
+CREATE DATABASE beautynailnet;
+USE beautynailnet;
 -- --------------------------------------------------------
 
 --
@@ -60,6 +55,11 @@ CREATE TABLE `APPOINTMENT_SERVICE` (
 -- Table structure for table `CUSTOMER`
 --
 
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `INVENTORY`
 CREATE TABLE `CUSTOMER` (
   `customer_id` int NOT NULL,
   `first_name` varchar(50) NOT NULL,
@@ -70,15 +70,9 @@ CREATE TABLE `CUSTOMER` (
   `allergies` text,
   `preferred_color` varchar(50) DEFAULT NULL,
   `loyalty_points` int DEFAULT '0',
-  `registration_date` date DEFAULT (curdate()),
+  `registration_date` datetime DEFAULT NOW(),
   `is_active` tinyint(1) DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `INVENTORY`
---
 
 CREATE TABLE `INVENTORY` (
   `inventory_id` int NOT NULL,

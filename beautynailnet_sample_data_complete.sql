@@ -293,6 +293,39 @@ INSERT INTO `STAFF` (`staff_id`, `first_name`, `last_name`, `phone`, `email`, `h
 (10, 'Megan', 'Jackson', '206-555-0209', 'megan.jackson@beautynailnet.com', '2023-10-15', 'Manager', 0.25, 'All Services', 1),
 (11, 'Rachel', 'Brown', '206-555-0210', 'rachel.brown@beautynailnet.com', '2023-12-01', 'Nail Artist', 0.18, 'Special Occasion Nails', 1);
 
+
+--
+-- Table structure for table `EVENTS`
+--
+
+CREATE TABLE `EVENTS` (
+  `events_id` int NOT NULL,
+  `event_name` varchar(100) NOT NULL,
+  `decription` text,
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `image` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`events_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `EVENTS`
+--
+
+INSERT INTO `EVENTS` (`events_id`, `event_name`, `decription`, `start_date`, `end_date`, `image`) VALUES
+(1, 'Spring Blossom Special', 'Celebrate spring with 15% off all floral nail art designs.', '2025-03-20', '2025-04-30', 'images/events/spring_blossom.jpg'),
+(2, 'Mother\'s Day Pamper', 'Treat your mom to a deluxe manicure and pedicure combo with a free gift.', '2025-05-01', '2025-05-12', 'images/events/mothers_day.jpg'),
+(3, 'Summer Glow Up', 'Discounts on paraffin treatments and gel manicures to prep for summer.', '2025-06-01', '2025-06-30', 'images/events/summer_glow.jpg'),
+(4, 'July 4th Nail Fest', 'Red, white, and blue nail art specials for Independence Day!', '2025-07-01', '2025-07-07', 'images/events/july4th.jpg'),
+(5, 'Back to School Deals', 'Students get 20% off all basic manicures and pedicures.', '2025-08-15', '2025-09-15', 'images/events/back_to_school.jpg'),
+(6, 'Autumn Colors Collection', 'Showcase of seasonal colors and limited edition polishes.', '2025-09-21', '2025-10-31', 'images/events/autumn_colors.jpg'),
+(7, 'Halloween Nail Art Contest', 'Win prizes for the spookiest nail designs! Submit photos by Oct 28.', '2025-10-01', '2025-10-31', 'images/events/halloween.jpg'),
+(8, 'Thankful Hands', 'Book any treatment in November and get a free cuticle oil sample.', '2025-11-01', '2025-11-30', 'images/events/thanksgiving.jpg'),
+(9, 'Holiday Sparkle Week', 'Festive glitter styles and gift card giveaways all December long.', '2025-12-01', '2025-12-24', 'images/events/holiday_sparkle.jpg'),
+(10, 'New Year, New Nails', 'Kick off 2026 with 10% off your first appointment of the year.', '2026-01-01', '2026-01-15', 'images/events/new_year.jpg');
+
+-- --------------------------------------------------------
+
 --
 -- Indexes for dumped tables
 --

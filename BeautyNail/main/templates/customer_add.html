@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div>
+        <h2 class="text-center mb-4">Add New Customer</h2>
+        <form method="post" action="{% url 'customer_add' %}">
+            {% csrf_token %}
+            <input type="text" name="first_name" placeholder="First Name" required><br>
+            <input type="text" name="last_name" placeholder="Last Name" required><br>
+            <input type="text" name="phone" placeholder="Phone" required><br>
+            <input type="email" name="email" placeholder="Email"><br>
+            <input type="date" name="date_of_birth" placeholder="Date of Birth"><br>
+            <input type="text" name="allergies" placeholder="Allergies"><br>
+            <input type="text" name="preferred_color" placeholder="Preferred Color"><br>
+            <input type="number" name="loyalty_points" placeholder="Loyalty Points" min="0" value="0"><br>
+            <select name="is_active">
+                <option value="1" selected>Active</option>
+                <option value="0">Inactive</option>
+            </select>
+            <button type="submit">Add Customer</button>
+            <a href="{% url 'customer_list' %}">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

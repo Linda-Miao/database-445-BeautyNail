@@ -1,20 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Hello Page</title>
-</head>
-<body>
-    <h1>Hello</h1>
+{% extends 'base.html' %}
 
-    <h2>Top 2 Customers:</h2>
-    <ul>
-        {% for customer in customers %}
-            <li>{{ customer.first_name }} {{ customer.last_name }} ({{ customer.phone }})</li>
-        {% empty %}
-            <li>No customers found.</li>
-        {% endfor %}
-    </ul>
+{% block title %}BeautyNailNet - Home{% endblock %}
 
-    <a href="{% url 'about' %}">Go to About Page</a>
-</body>
-</html>
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="stat-card">
+            <h5 class="text-secondary">Total Customers</h5>
+            <h2 class="text-pink">{{ customers_count }}</h2>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stat-card">
+            <h5 class="text-secondary">Total Appointments</h5>
+            <h2 class="text-pink">{{ appointments_count }}</h2>
+        </div>
+    </div>
+</div>
+<div class="card p-4">
+    <h2>Welcome to BeautyNailNet</h2>
+    <p>This is a comprehensive nail salon management system built with Django and MySQL.</p>
+    <p>Features include customer management, appointment scheduling, service tracking, and more!</p>
+</div>
+{% endblock %}

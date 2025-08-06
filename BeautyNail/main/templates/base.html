@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}BeautyNailNet - Professional Nail Salon{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .header { background-color: #e91e63; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+        .nav-link { color: #e91e63 !important; font-weight: bold; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="header">
+            <h1>💅 BeautyNailNet</h1>
+            <p>Professional Nail Salon Management System</p>
+        </div>
+        <nav class="nav mb-4">
+            <a class="nav-link d-inline" href="/">Home</a>
+            <a class="nav-link d-inline" href="/staff/">Staff</a>
+            <a class="nav-link d-inline" href="/customers/">Customers</a>
+            <a class="nav-link d-inline" href="/reviews/">Reviews</a>
+            <a class="nav-link d-inline" href="/appointments/">Appointments</a>
+            <a class="nav-link d-inline" href="/services/">Services</a>
+            <a class="nav-link d-inline" href="/appointment_services/">Appointment Services</a>
+            <a class="nav-link d-inline" href="/payments/">Payments</a>
+            <a class="nav-link d-inline" href="/inventory/">Inventory</a>
+   
+        </nav>
+        {% block content %}{% endblock %}
+    </div>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

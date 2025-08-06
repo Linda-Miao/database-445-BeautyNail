@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div>
+        <h2 class="text-center mb-4">Edit Customer</h2>
+        <form method="post">
+            {% csrf_token %}
+            <table>
+                <tr>
+                    <td><label for="first_name">First Name:</label></td>
+                    <td><input type="text" name="first_name" id="first_name" value="{{ customer.first_name }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="last_name">Last Name:</label></td>
+                    <td><input type="text" name="last_name" id="last_name" value="{{ customer.last_name }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="phone">Phone:</label></td>
+                    <td><input type="text" name="phone" id="phone" value="{{ customer.phone }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="email">Email:</label></td>
+                    <td><input type="email" name="email" id="email" value="{{ customer.email }}"></td>
+                </tr>
+                <tr>
+                    <td><label for="date_of_birth">Date of Birth:</label></td>
+                    <td><input type="date" name="date_of_birth" id="date_of_birth" value="{{ customer.date_of_birth }}"></td>
+                </tr>
+                <tr>
+                    <td><label for="allergies">Allergies:</label></td>
+                    <td><input type="text" name="allergies" id="allergies" value="{{ customer.allergies }}"></td>
+                </tr>
+                <tr>
+                    <td><label for="preferred_color">Preferred Color:</label></td>
+                    <td><input type="text" name="preferred_color" id="preferred_color" value="{{ customer.preferred_color }}"></td>
+                </tr>
+                <tr>
+                    <td><label for="loyalty_points">Loyalty Points:</label></td>
+                    <td><input type="number" name="loyalty_points" id="loyalty_points" value="{{ customer.loyalty_points }}"></td>
+                </tr>
+                <tr>
+                    <td><label for="is_active">Status:</label></td>
+                    <td>
+                        <select name="is_active" id="is_active">
+                            <option value="1" {% if customer.is_active %}selected{% endif %}>Active</option>
+                            <option value="0" {% if not customer.is_active %}selected{% endif %}>Inactive</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="text-align:center; padding-top:12px;">
+                        <button type="submit" class="btn btn-success me-2">Update</button>
+                        <a href="{% url 'customer_list' %}" class="btn btn-secondary">Cancel</a>
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}

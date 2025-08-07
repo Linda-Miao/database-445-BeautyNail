@@ -18,16 +18,35 @@
             <p>Professional Nail Salon Management System</p>
         </div>
         <nav class="nav mb-4">
-            <a class="nav-link d-inline" href="/">Home</a>
-            <a class="nav-link d-inline" href="/staffs/">Staff</a>
-            <a class="nav-link d-inline" href="/customers/">Customers</a>
-            <a class="nav-link d-inline" href="/reviews/">Reviews</a>
-            <a class="nav-link d-inline" href="/appointments/">Appointments</a>
-            <a class="nav-link d-inline" href="/services/">Services</a>
-            <a class="nav-link d-inline" href="/appointment_services/">Appointment Services</a>
-            <a class="nav-link d-inline" href="/payments/">Payments</a>
-            <a class="nav-link d-inline" href="/inventory/">Inventory</a>
-   
+            <div class="d-flex">
+                <a class="nav-link" href="/">Home</a>
+
+                {% if user.is_authenticated %}
+                    {% if user.is_superuser %}
+                        <a class="nav-link" href="/staffs/">Staff</a>
+                        <a class="nav-link" href="/customers/">Customers</a>
+                        <a class="nav-link" href="/reviews/">Reviews</a>
+                        <a class="nav-link" href="/appointments/">Appointments</a>
+                        <a class="nav-link" href="/services/">Services</a>
+                        <a class="nav-link" href="/appointment_services/">Appointment Services</a>
+                        <a class="nav-link" href="/payments/">Payments</a>
+                        <a class="nav-link" href="/inventory/">Inventory</a>
+                {% else %}
+                        <a class="nav-link" href="/appointments/">My Appointments</a>
+                        <a class="nav-link" href="/staffs/">Staff</a>
+                {% endif %}
+                {% endif %}
+            </div>
+
+        <div class="ms-auto d-flex align-items-center">
+            {% if user.is_authenticated %}
+                <span class="me-2 fw-bold">{{ user.first_name }} {{ user.last_name }}</span>
+                <span class="me-2">|</span>
+                <a class="nav-link text-danger p-0" href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a class="nav-link p-0" href="{% url 'login' %}">Login</a>
+            {% endif %}
+        </div>
         </nav>
         {% block content %}{% endblock %}
     </div>

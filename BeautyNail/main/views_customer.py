@@ -2,12 +2,39 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Customer,Review,Staff
 from django.db import connection
+from django.contrib.auth.models import User
 # Create your views here.
 
 # Django support insert, edit, delete using ORM so we only implement the insert, edit, delete function using raw query only for customer table
+# def customer_add(request):
+#     if request.method == 'POST':
+#         data = request.POST
+#         with connection.cursor() as cursor:
+#             cursor.execute(
+#                 """
+#                 INSERT INTO customer 
+#                 (first_name, last_name, phone, email, date_of_birth, allergies, preferred_color, loyalty_points, is_active)
+#                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+#                 """,
+#                 [
+#                     data['first_name'],
+#                     data['last_name'],
+#                     data['phone'],
+#                     data.get('email') or None,
+#                     data.get('date_of_birth') or None,
+#                     data.get('allergies') or None,
+#                     data.get('preferred_color') or None,
+#                     data.get('loyalty_points') or 0,
+#                     data.get('is_active') or 1
+#                 ]
+#             )
+#         return redirect('customer_list')
+#     return render(request, 'customers\customer_add.html')
+
 def customer_add(request):
     if request.method == 'POST':
         data = request.POST
+
         with connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -27,8 +54,30 @@ def customer_add(request):
                     data.get('is_active') or 1
                 ]
             )
+            customer_id = cursor.lastrowid  # new customer ID
+
+        username = data.get('username')
+        password = data.get('password')
+
+        if username and password:
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                first_name=data['first_name'],
+                last_name=data['last_name'],
+                email=data.get('email') or ''
+            )
+
+            # Link the created user to the customer
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE customer SET user_id = %s WHERE customer_id = %s",
+                    [user.id, customer_id]
+                )
+
         return redirect('customer_list')
-    return render(request, 'customers\customer_add.html')
+
+    return render(request, 'customers/customer_add.html')
 
 def customer_edit(request, customer_id):
     with connection.cursor() as cursor:

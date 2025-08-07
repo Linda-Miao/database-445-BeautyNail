@@ -15,10 +15,11 @@ source venv/bin/activate  # macOS/Linux
 venv\Scripts\activate     # Windows
 ```
 
-### ✅ 2. Install Django
+### ✅ 2. Install Django and mysqlclient
 
 ```bash
 pip install Django
+pip install mysqlclient
 ```
 
 ### ✅ 3. Start the Django Project

@@ -4,14 +4,6 @@ from .models import Customer,Review,Staff
 from django.db import connection
 # Create your views here.
 
-
-def hello_customers(request):
-    	customers = Customer.objects.all()[:2]
-    	return render(request, 'main.html', {'customers': customers})
-
-def views_about(request):
-        return render(request, 'about.html', )
-
 # Django support insert, edit, delete using ORM so we only implement the insert, edit, delete function using raw query only for customer table
 def customer_add(request):
     if request.method == 'POST':
@@ -36,7 +28,7 @@ def customer_add(request):
                 ]
             )
         return redirect('customer_list')
-    return render(request, 'customer_add.html')
+    return render(request, 'customers\customer_add.html')
 
 def customer_edit(request, customer_id):
     with connection.cursor() as cursor:
@@ -81,23 +73,24 @@ def customer_edit(request, customer_id):
         'registration_date': row[9],
         'is_active': row[10],
     }
-    return render(request, 'customer_edit.html', {'customer': customer})
+    return render(request, 'customers\customer_edit.html', {'customer': customer})
 
 def customer_delete(request, customer_id):
     if request.method == 'POST':
         with connection.cursor() as cursor:
             cursor.execute("DELETE FROM customer WHERE customer_id=%s", [customer_id])
         return redirect('customer_list')
-    return render(request, 'customer_confirm_delete.html', {'customer_id': customer_id})
+    return redirect('customer_list') 
 
 
 def get_customers_by_search(query):
     sql = "SELECT * FROM customer"
     params = []
     if query:
-        sql += " WHERE first_name LIKE %s OR last_name LIKE %s OR phone LIKE %s OR email LIKE %s"
+        sql += " WHERE first_name LIKE %s OR last_name LIKE %s OR phone LIKE %s OR email LIKE %s "
         search = f"%{query}%"
         params = [search] * 4
+    sql += " ORDER BY is_active DESC, loyalty_points DESC "
     return Customer.objects.raw(sql, params)
 
 def get_top_customers():
@@ -146,9 +139,7 @@ def customer_list(request):
     else:
         customers = get_customers_by_search(query)
 
-    return render(request, 'customers.html', {
+    return render(request, 'customers\customers.html', {
         'customers': customers,
-        'search_query': query,
-        'top_customer': top_customer,
-        'unsatisfy_customer': unsatisfy_customer,
+        'search_query': query
     })

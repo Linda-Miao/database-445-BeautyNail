@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff List | BeautyNailNet{% endblock %}
+
+{% block content %}
+<div class="card p-4 mb-4">
+    <h2 class="mb-4">Staff List</h2>
+    <!-- Search form -->
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="search" class="form-control" placeholder="Search by name, phone, specialty, position or email..." value="{{ search_query|default:'' }}">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+        </div>
+    </form>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white rounded shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Hire Date</th>
+                    <th>Position</th>
+                    <th>Commission Rate</th>
+                    <th>Specialty</th>
+                    {% if request.GET.favorite_staffs %}
+                        <th class="table-warning">Total Appointments</th>
+                    {% elif request.GET.positive_staffs %}
+                        <th class="table-warning">5-Star Reviews</th>
+                    {% elif request.GET.employee_of_the_month %}
+                        <th class="table-warning">Profit Contribution</th>
+                    {% endif %}
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for staff in staffs %}
+                <tr>
+                    <td>{{ staff.staff_id }}</td>
+                    <td>{{ staff.first_name }} {{ staff.last_name }}</td>
+                    <td>{{ staff.phone }}</td>
+                    <td>{{ staff.email }}</td>
+                    <td>{{ staff.hire_date }}</td>
+                    <td>{{ staff.position }}</td>
+                    <td>{{ staff.commission_rate }}</td>
+                    <td>{{ staff.specialty|default:"-" }}</td>
+                    {% if request.GET.favorite_staffs %}
+                        <td class="table-warning fw-bold">{{ staff.appointments }}</td>
+                    {% elif request.GET.positive_staffs %}
+                        <td class="table-warning fw-bold">{{ staff.five_star_reviews }}</td>
+                    {% elif request.GET.employee_of_the_month %}
+                        <td class="table-warning fw-bold">{{ staff.contribution }}</td>
+                    {% endif %}
+                    <td>
+                        {% if staff.is_active %}
+                            <span class="badge bg-success">Yes</span>
+                        {% else %}
+                            <span class="badge bg-danger">No</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <a href="{% url 'staff_edit' staff.staff_id %}" class="btn btn-primary btn-sm">Edit</a>
+                        <form method="post" action="{% url 'staff_delete' staff.staff_id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this staff member?');">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center">No staff found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
+        <form method="get" action="" class="mb-3" style="display:inline;">
+            <button type="submit" name="favorite_staffs" value="1" class="btn btn-primary btn-sm ms-2">
+                Most Favorite Staff Members
+            </button>
+            <button type="submit" name="positive_staffs" value="1" class="btn btn-danger btn-sm ms-2">
+                Most Positive Reviews Staff Members
+            </button>
+            <button type="submit" class="btn btn-secondary btn-sm ms-2">Show All</button>
+            <a href="{% url 'staff_add' %}" class="btn btn-success btn-sm ms-2" style="margin-left: 8px;">
+                Add New Staff
+            </a>
+        </form>
+
+    </div>
+    <div class="mb-3">
+        <form method="get" class="d-inline-flex align-items-center gap-2">
+            <label for="date" class="form-label mb-0" style="font-weight: 500;">Employee of the month:</label>
+            <input type="date" id="date" name="date" style="width: 160px;"
+                value="{{ selected_date|default:'' }}" required>
+            <button type="submit" name="employee_of_the_month" value="1" class="btn btn-warning btn-sm">
+                Employee of the Month
+            </button>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock %}

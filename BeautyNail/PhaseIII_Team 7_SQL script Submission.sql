@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS `INVENTORY` (
 CREATE TABLE IF NOT EXISTS `EVENTS` (
   `events_id` int NOT NULL AUTO_INCREMENT,
   `event_name` varchar(100) NOT NULL,
-  `decription` text,
+  `description` text,
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `image` varchar(255) DEFAULT NULL,
@@ -230,7 +230,7 @@ INSERT INTO `INVENTORY` (`inventory_id`, `product_name`, `brand`, `category`, `c
 (9, 'Gel Polish Blue', 'Gelish', 'Gel', 'Ocean Blue', 22, 12.00, 20.00, 5, 'Gel Systems Ltd', '2025-07-18 22:09:18'),
 (10, 'Nail Glue', 'Kiss', 'Adhesive', NULL, 30, 1.50, 4.00, 8, 'Nail Repair Co', '2025-07-18 22:09:18');
 
-INSERT INTO `EVENTS` (`events_id`, `event_name`, `decription`, `start_date`, `end_date`, `image`) VALUES
+INSERT INTO `EVENTS` (`events_id`, `event_name`, `description`, `start_date`, `end_date`, `image`) VALUES
 (1, 'Spring Blossom Special', 'Celebrate spring with 15% off all floral nail art designs.', '2025-03-20', '2025-04-30', 'images/events/spring_blossom.jpg'),
 (2, 'Mother\'s Day Pamper', 'Treat your mom to a deluxe manicure and pedicure combo with a free gift.', '2025-05-01', '2025-05-12', 'images/events/mothers_day.jpg'),
 (3, 'Summer Glow Up', 'Discounts on paraffin treatments and gel manicures to prep for summer.', '2025-06-01', '2025-06-30', 'images/events/summer_glow.jpg'),

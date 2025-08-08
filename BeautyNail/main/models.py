@@ -244,3 +244,20 @@ class Staff(models.Model):
     class Meta:
         managed = False
         db_table = 'staff'
+
+class Event(models.Model):
+    events_id = models.AutoField(primary_key=True)
+    event_name = models.CharField(max_length=100)
+    # NOTE: the DB column is "decription" (typo). Map it explicitly:
+    description = models.TextField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    image = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        db_table = 'EVENTS'
+        managed = False
+
+    def __str__(self):
+        return self.event_name
+

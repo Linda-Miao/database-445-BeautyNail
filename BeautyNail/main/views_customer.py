@@ -6,31 +6,6 @@ from django.contrib.auth.models import User
 # Create your views here.
 
 # Django support insert, edit, delete using ORM so we only implement the insert, edit, delete function using raw query only for customer table
-# def customer_add(request):
-#     if request.method == 'POST':
-#         data = request.POST
-#         with connection.cursor() as cursor:
-#             cursor.execute(
-#                 """
-#                 INSERT INTO customer 
-#                 (first_name, last_name, phone, email, date_of_birth, allergies, preferred_color, loyalty_points, is_active)
-#                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-#                 """,
-#                 [
-#                     data['first_name'],
-#                     data['last_name'],
-#                     data['phone'],
-#                     data.get('email') or None,
-#                     data.get('date_of_birth') or None,
-#                     data.get('allergies') or None,
-#                     data.get('preferred_color') or None,
-#                     data.get('loyalty_points') or 0,
-#                     data.get('is_active') or 1
-#                 ]
-#             )
-#         return redirect('customer_list')
-#     return render(request, 'customers\customer_add.html')
-
 def customer_add(request):
     if request.method == 'POST':
         data = request.POST

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div>
+    <h2 class="text-center mb-4">Edit Event</h2>
+    <form method="post">
+      {% csrf_token %}
+      <table>
+        <tr>
+          <td><label for="event_name">Event Name:</label></td>
+          <td><input type="text" id="event_name" name="event_name" value="{{ event.event_name }}" required></td>
+        </tr>
+        <tr>
+          <td><label for="description">Description:</label></td>
+          <td>
+            <!-- match DB column name -->
+            <textarea id="description" name="description" rows="3" cols="40">{{ event.description }}</textarea>
+          </td>
+        </tr>
+        <tr>
+          <td><label for="start_date">Start Date:</label></td>
+          <td><input type="date" id="start_date" name="start_date" value="{{ event.start_date|date:'Y-m-d' }}"></td>
+        </tr>
+        <tr>
+          <td><label for="end_date">End Date:</label></td>
+          <td><input type="date" id="end_date" name="end_date" value="{{ event.end_date|date:'Y-m-d' }}"></td>
+        </tr>
+        <tr>
+          <td><label for="image">Image URL:</label></td>
+          <td><input type="text" id="image" name="image" value="{{ event.image }}"></td>
+        </tr>
+        <tr>
+          <td colspan="2" style="text-align:center; padding-top:12px;">
+            <button type="submit" class="btn btn-success me-2">Update</button>
+            <a href="{% url 'event_list' %}" class="btn btn-secondary">Cancel</a>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+</div>
+{% endblock %}

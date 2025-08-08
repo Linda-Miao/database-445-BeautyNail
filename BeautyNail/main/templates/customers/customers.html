@@ -22,7 +22,7 @@
                     <th>Email</th>
                     <th>Loyalty Points</th>
                     <th>Active</th>
-                    {% if unsatisfy_customer %}
+                    {% if request.GET.unsatisfy_customer %}
                         <th class="table-warning">Review ID</th>
                         <th class="table-warning">Rating</th>
                         <th class="table-warning">Appointment ID</th>
@@ -47,7 +47,7 @@
                          <span class="badge bg-danger">No</span>
                         {% endif %}
                     </td>
-                    {% if unsatisfy_customer %}
+                    {% if request.GET.unsatisfy_customer %}
                         <td class="table-warning fw-bold">{{ customer.review_id }}</td>
                         <td class="table-warning fw-bold">{{ customer.rating }}</td>
                         <td class="table-warning fw-bold">{{ customer.appointment_id }}</td>

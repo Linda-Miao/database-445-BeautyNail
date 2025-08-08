@@ -174,7 +174,7 @@ def get_negative_reviewers():
         WHERE r.rating < 3
         ORDER BY r.rating ASC
     """
-    return Review.objects.raw(sql)
+    return Customer.objects.raw(sql)
 
 def customer_list(request):
     query = request.GET.get('search', '').strip()

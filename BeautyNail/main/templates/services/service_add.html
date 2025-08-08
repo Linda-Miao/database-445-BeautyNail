@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div>
+    <h2 class="text-center mb-4">Add New Service</h2>
+    <form method="post" action="{% url 'service_add' %}">
+      {% csrf_token %}
+      <table>
+        <tr>
+          <td><label for="service_name">Service Name:</label></td>
+          <td><input type="text" id="service_name" name="service_name" required></td>
+        </tr>
+        <tr>
+          <td><label for="description">Description:</label></td>
+          <td><textarea id="description" name="description" rows="3" cols="40"></textarea></td>
+        </tr>
+        <tr>
+          <td><label for="base_price">Base Price:</label></td>
+          <td><input type="number" id="base_price" name="base_price" step="0.01" required></td>
+        </tr>
+        <tr>
+          <td><label for="duration_minutes">Duration (minutes):</label></td>
+          <td><input type="number" id="duration_minutes" name="duration_minutes" min="0" required></td>
+        </tr>
+        <tr>
+            <td><label for="category">Category:</label></td>
+            <td>
+                <select id="category" name="category" required>
+                <option value="">-- Select Category --</option>
+                <option value="Basic">Basic</option>
+                <option value="Treatment">Treatment</option>
+                <option value="Removal">Removal</option>
+                <option value="Manicure">Manicure</option>
+                <option value="Extensions">Extensions</option>
+                <option value="Pedicure">Pedicure</option>
+                <option value="Art">Art</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+          <td><label for="requies_appointment">Requires Appointment?</label></td>
+          <td>
+            <select id="requies_appointment" name="requies_appointment">
+              <option value="1" selected>Yes</option>
+              <option value="0">No</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2" style="text-align:center; padding-top:12px;">
+            <button type="submit" class="btn btn-success me-2">Add Service</button>
+            <a href="{% url 'service_list' %}" class="btn btn-secondary">Cancel</a>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+</div>
+{% endblock %}

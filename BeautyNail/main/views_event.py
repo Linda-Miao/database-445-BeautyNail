@@ -12,8 +12,8 @@ def get_events_by_search(query):
             "WHERE event_name LIKE %s "
             "OR description LIKE %s "
         )
-        like = f"%{query}%"
-        params = [like, like]
+        search = f"%{query}%"
+        params = [search] * 2
     sql += "ORDER BY start_date DESC, end_date DESC "
     return Event.objects.raw(sql, params)
 

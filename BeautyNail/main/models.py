@@ -180,7 +180,7 @@ class Inventory(models.Model):
     retail_price = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
     reorder_level = models.IntegerField(blank=True, null=True)
     supplier_name = models.CharField(max_length=100, blank=True, null=True)
-    last_updated = models.DateTimeField(blank=True, null=True)
+    last_updated = models.DateTimeField(blank=True, null=True, auto_now=True)
 
     class Meta:
         managed = False

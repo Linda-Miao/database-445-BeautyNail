@@ -107,7 +107,7 @@
   </div>
 </div>
 
-<script>
+{% comment %} <script>
   function addServiceRow() {
     const container = document.getElementById("services-list");
     const first = container.querySelector(".service-row");
@@ -128,5 +128,7 @@
       btn.closest(".service-row").remove();
     }
   }
-</script>
+</script> {% endcomment %}
+{% load static %}
+<script src="{% static 'js/appointments.js' %}" defer></script>
 {% endblock %}

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import connection
 from django.contrib import messages
-from .models import Service  # assumes db_table='SERVICE' and managed=False
+from .models import Service 
 
 def get_services_by_search(query):
     sql = "SELECT * FROM SERVICE "

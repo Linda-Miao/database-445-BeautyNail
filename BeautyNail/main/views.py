@@ -23,7 +23,7 @@ def user_login(request):
             login(request, user)
             return redirect('main')  # Go to home page
         else:
-            messages.error(request, 'Invalid username or password')
+            messages.error(request, 'Invalid username or password',xtra_tags="login_error")
     return render(request, 'login.html')
 
 def user_logout(request):

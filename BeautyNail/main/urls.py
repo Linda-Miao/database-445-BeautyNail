@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, views_customer, views_staff, views_event, views_inventory, views_service
+from . import views, views_customer, views_staff, views_event, views_inventory, views_service, views_appointment, views_my_appointment
 
 urlpatterns = [
     path('', views.views_main, name='main'),
@@ -36,4 +36,13 @@ urlpatterns = [
     path('services/add/', views_service.service_add, name='service_add'),
     path('services/<int:service_id>/edit/', views_service.service_edit, name='service_edit'),
     path('services/<int:service_id>/delete/', views_service.service_delete, name='service_delete'),
+
+    # Appointment paths
+    path('appointments/', views_appointment.appointment_list, name='appointment_list'),
+    path('appointments/add/', views_appointment.appointment_add, name='appointment_add'),
+    path('appointments/<int:appointment_id>/edit/', views_appointment.appointment_edit, name='appointment_edit'),
+    path('appointments/<int:appointment_id>/delete/', views_appointment.appointment_delete, name='appointment_delete'),
+    path('my_appointments/', views_my_appointment.my_appointment_list, name='my_appointments'),
+    path('my_appointments/add/', views_my_appointment.my_appointment_add, name='my_appointment_add'),
+    path('my_appointments/<int:appointment_id>/edit/', views_my_appointment.my_appointment_edit, name='my_appointment_edit'),
 ]

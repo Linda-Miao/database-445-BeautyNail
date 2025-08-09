@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Appointments | BeautyNailNet{% endblock %}
+{% block content %}
+<div class="card p-4 mb-4">
+  <h2 class="mb-4">Appointments</h2>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle bg-white rounded shadow-sm">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Date</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Customer</th>
+          <th>Staff</th>
+          <th>Status</th>
+          <th>Total</th>
+          <th style="width:180px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in appointments %}
+        <tr>
+          <td>{{ a.id }}</td>
+          <td>{{ a.date }}</td>
+          <td>{{ a.start }}</td>
+          <td>{{ a.end|default:"-" }}</td>
+          <td>{{ a.customer }}</td>
+          <td>{{ a.staff }}</td>
+          <td>{{ a.status }}</td>
+          <td>{{ a.total|default:"-" }}</td>
+          <td>
+            <a href="{% url 'appointment_edit' a.id %}" class="btn btn-primary btn-sm">Edit</a>
+            <form method="post" action="{% url 'appointment_delete' a.id %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm"
+                      onclick="return confirm('Delete this appointment?');">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" class="text-center">No appointments.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a href="{% url 'appointment_add' %}" class="btn btn-success btn-sm">Add New Appointment</a>
+  </div>
+</div>
+{% endblock %}

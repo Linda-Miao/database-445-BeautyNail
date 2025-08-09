@@ -5,7 +5,9 @@
         <h2 class="text-center mb-4">Login</h2>
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-danger">{{ message }}</div>
+                {% if 'login_error' in message.tags %}
+                    <div class="alert alert-danger">{{ message }}</div>
+                {% endif %}
             {% endfor %}
         {% endif %}
         <form method="post">

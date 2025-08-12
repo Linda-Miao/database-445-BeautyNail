@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from .models import Appointment  
 from django.contrib.auth.decorators import login_required
+from datetime import datetime, timedelta
 
 
 
@@ -81,6 +82,29 @@ def _services_prices_and_total(service_ids):
     price_map = _service_price_map(service_ids)
     total_amount = sum(price_map.get(sid, 0) for sid in service_ids) or None
     return price_map, total_amount
+
+def _parse_start_end_time(request, template_name, context):
+    """
+    Extracts and validates 'start_datetime' from request.POST.
+    Returns (appointment_date, start_time, end_time) if valid, or
+    renders the given template with context + error message if invalid.
+    """
+    start_str = (request.POST.get("start_datetime") or "").strip()
+    if not start_str:
+        messages.error(request, "Please pick a date and time.")
+        return None, render(request, template_name, context)
+
+    try:
+        start_dt = datetime.strptime(start_str, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        messages.error(request, "Invalid date/time format.")
+        return None, render(request, template_name, context)
+
+    appointment_date = start_dt.date().strftime("%Y-%m-%d")
+    start_time = start_dt.time().strftime("%H:%M:%S")
+    end_time = (start_dt + timedelta(minutes=90)).time().strftime("%H:%M:%S")
+
+    return (appointment_date, start_time, end_time), None
 
 
 # ---------- list / load ----------

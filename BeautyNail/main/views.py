@@ -9,7 +9,17 @@ from django.contrib.auth.models import User
 
 
 def views_main(request):
-    return render(request, 'main.html')
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT COUNT(*) FROM customer")
+        customers_count = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM appointment")
+        appointments_count = cursor.fetchone()[0]
+
+    return render(request, 'main.html', {
+        'customers_count': customers_count,
+        'appointments_count': appointments_count,
+    })
 
 def views_about(request):
         return render(request, 'about.html', )

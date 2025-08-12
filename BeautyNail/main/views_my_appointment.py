@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db import connection, transaction
 from django.contrib import messages
 from django.utils import timezone
+from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required
 from .models import Appointment, Customer
 from .views_appointment import (
@@ -9,7 +10,8 @@ from .views_appointment import (
     _service_options,
     _normalize_services,
     _services_prices_and_total,
-    _load_appointment_service_rows
+    _load_appointment_service_rows,
+    _parse_start_end_time
 )
 
 # -------- My Appointments List --------
@@ -48,10 +50,30 @@ def my_appointment_add(request):
     customer = get_object_or_404(Customer, user_id=request.user.id)
 
     if request.method == 'POST':
+        appointment_date = (request.POST.get("appointment_date") or "").strip()
+        start_time = (request.POST.get("start_time") or "").strip()
+
+        if not appointment_date or not start_time:
+            messages.error(request, "Please pick a date and a time.")
+            return render(request, 'appointments/my_appointment_add.html', {
+            'staff_opts': staff_opts,
+            'svc_opts': svc_opts
+        })
+
+        start_dt = datetime.strptime(f"{appointment_date} {start_time}", "%Y-%m-%d %H:%M:%S")
+        end_time = (start_dt + timedelta(minutes=90)).strftime("%H:%M:%S")
+        # date_time_result, error_response = _parse_start_end_time(
+        #     request,
+        #     'appointments/my_appointment_add.html',
+        #     {'staff_opts': staff_opts, 'svc_opts': svc_opts}
+        # )
+        # if error_response:
+        #     return error_response
+        # appointment_date, start_time, end_time = date_time_result
         staff_id = request.POST.get('staff_id')
-        appointment_date = request.POST.get('appointment_date')
-        start_time = request.POST.get('start_time')
-        end_time = request.POST.get('end_time') or None
+        # appointment_date = request.POST.get('appointment_date')
+        # start_time = request.POST.get('start_time')
+        # end_time = request.POST.get('end_time') or None
         notes = request.POST.get('notes', '').strip() or None
 
         raw_service_ids = request.POST.getlist('service_ids[]')

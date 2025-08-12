@@ -22,28 +22,46 @@
             </select>
           </td>
         </tr>
-        <tr>
-          <td><label for="appointment_date">Date:</label></td>
-          <td>
-            <input
-              type="date"
-              id="appointment_date"
-              name="appointment_date"
-              required
-            />
-          </td>
-        </tr>
-        <tr>
-          <td><label for="start_time">Start Time:</label></td>
-          <td>
-            <input type="time" id="start_time" name="start_time" required />
-          </td>
-        </tr>
-        <tr>
-          <td><label for="end_time">End Time:</label></td>
-          <td><input type="time" id="end_time" name="end_time" /></td>
-        </tr>
-        <!-- status is not shown because it's auto-set to pending -->
+<tr>
+  <td><label>Appointment Date & Time:</label></td>
+  <td>
+    <div class="calendar-section bg-white rounded-4 p-4 shadow-sm" style="max-width: 500px;">
+      <h3 class="calendar-title h5 mb-3">Pick a date & time</h3>
+
+      <!-- DATE (Flatpickr mounts here) -->
+      <div id="inline_date"></div>
+
+      <!-- Hidden fields submitted to backend -->
+      <input type="hidden" id="appointment_date" name="appointment_date" required>
+      <input type="hidden" id="start_time" name="start_time" required>
+
+      <!-- TIME (2 rows × 3 cols) -->
+      <div class="mt-4">
+        <h6 class="mb-3">Available Times</h6>
+        <div id="time_grid" class="row g-3">
+          <div class="col-4">
+            <button type="button" class="btn btn-light w-100 time-slot-btn" data-time="09:00:00">9:00 AM</button>
+          </div>
+          <div class="col-4">
+            <button type="button" class="btn btn-light w-100 time-slot-btn" data-time="10:30:00">10:30 AM</button>
+          </div>
+          <div class="col-4">
+            <button type="button" class="btn btn-light w-100 time-slot-btn" data-time="12:00:00">12:00 PM</button>
+          </div>
+          <div class="col-4">
+            <button type="button" class="btn btn-light w-100 time-slot-btn" data-time="13:30:00">1:30 PM</button>
+          </div>
+          <div class="col-4">
+            <button type="button" class="btn btn-light w-100 time-slot-btn" data-time="15:00:00">3:00 PM</button>
+          </div>
+          <div class="col-4">
+            <button type="button" class="btn btn-light w-100 time-slot-btn" data-time="18:30:00">6:30 PM</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </td>
+</tr>
         <tr>
           <td valign="top"><label>Services:</label></td>
           <td>
@@ -128,6 +146,27 @@
       btn.closest(".service-row").remove();
     }
   }
+</script> {% endcomment %}
+{% comment %} <script>
+  flatpickr("#inline_datetime", {
+    inline: true,
+    enableTime: true,
+    minDate: "today",
+    minuteIncrement: 30,          // 30-min slots
+    dateFormat: "Y-m-d H:i:S",    // what backend parses
+    defaultDate: "today",
+    time_24hr: false,             // set true if you prefer 24h
+    // Flatpickr writes to the altInput or the element itself;
+    // we'll mirror the selected value into the hidden field:
+    onChange: function(selectedDates, dateStr) {
+      document.getElementById("start_datetime").value = dateStr;
+    },
+    onReady: function(selectedDates, dateStr, instance) {
+      // initialize hidden value on first paint
+      const v = dateStr || instance.formatDate(new Date(), "Y-m-d H:i:S");
+      document.getElementById("start_datetime").value = v;
+    }
+  });
 </script> {% endcomment %}
 {% load static %}
 <script src="{% static 'js/appointments.js' %}" defer></script>

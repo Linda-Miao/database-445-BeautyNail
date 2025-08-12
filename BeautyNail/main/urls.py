@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views, views_customer, views_staff, views_event, views_inventory, views_service, views_appointment, views_my_appointment
+from . import views, views_customer, views_staff, views_event, views_inventory, views_service, views_appointment, views_my_appointment, views_guest_appointment
 
 urlpatterns = [
     path('', views.views_main, name='main'),
@@ -45,4 +45,5 @@ urlpatterns = [
     path('my_appointments/', views_my_appointment.my_appointment_list, name='my_appointments'),
     path('my_appointments/add/', views_my_appointment.my_appointment_add, name='my_appointment_add'),
     path('my_appointments/<int:appointment_id>/edit/', views_my_appointment.my_appointment_edit, name='my_appointment_edit'),
+    #path('guest_appointments/', views_guest_appointment.guest_appointment_add, name='guest_appointments_add'),
 ]

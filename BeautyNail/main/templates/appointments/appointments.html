@@ -19,19 +19,19 @@
         </tr>
       </thead>
       <tbody>
-        {% for a in appointments %}
+        {% for appt in appointments %}
         <tr>
-          <td>{{ a.id }}</td>
-          <td>{{ a.date }}</td>
-          <td>{{ a.start }}</td>
-          <td>{{ a.end|default:"-" }}</td>
-          <td>{{ a.customer }}</td>
-          <td>{{ a.staff }}</td>
-          <td>{{ a.status }}</td>
-          <td>{{ a.total|default:"-" }}</td>
+          <td>{{ appt.id }}</td>
+          <td>{{ appt.date }}</td>
+          <td>{{ appt.start|default:"-"|time:"g:i A" }}</td>
+          <td>{{ appt.end|default:"-"|time:"g:i A" }}</td>
+          <td>{{ appt.customer }}</td>
+          <td>{{ appt.staff }}</td>
+          <td>{{ appt.status }}</td>
+          <td>{{ appt.total|default:"-" }}</td>
           <td>
-            <a href="{% url 'appointment_edit' a.id %}" class="btn btn-primary btn-sm">Edit</a>
-            <form method="post" action="{% url 'appointment_delete' a.id %}" style="display:inline;">
+            <a href="{% url 'appointment_edit' appt.id %}" class="btn btn-primary btn-sm">Edit</a>
+            <form method="post" action="{% url 'appointment_delete' appt.id %}" style="display:inline;">
               {% csrf_token %}
               <button type="submit" class="btn btn-danger btn-sm"
                       onclick="return confirm('Delete this appointment?');">Delete</button>

@@ -43,7 +43,6 @@
       dateFormat: 'Y-m-d',
       defaultDate: defaultDate,
       onChange: (_, dateStr) => { hidden.value = dateStr; },
-      // NOTE: if you need to allow editing past dates, leave minDate off
       // minDate: 'today',
     });
   }
@@ -54,17 +53,24 @@ function initTime() {
   const hidden = document.getElementById('start_time');
   if (!grid || !hidden) return;
 
-  // One-time cleanup on load: ensure only ONE is preselected
   const allBtns = Array.from(grid.querySelectorAll('.time-slot-btn'));
-  const dataVal = (grid.getAttribute('data-selected-time') || hidden.value || '').trim();
+  let dataVal = (grid.getAttribute('data-selected-time') || hidden.value || '').trim();
+
   if (dataVal) {
     const norm = dataVal.length === 5 ? `${dataVal}:00` : dataVal;
-    // remove from all, then add only to the matching one
     allBtns.forEach(b => b.classList.remove('selected-slot'));
     const match = grid.querySelector(`.time-slot-btn[data-time="${norm}"]`);
     if (match) {
       match.classList.add('selected-slot');
       hidden.value = norm;
+    }
+  } else {
+    // ADD page: pick the first available slot by default
+    const first = allBtns[0];
+    if (first) {
+      allBtns.forEach(b => b.classList.remove('selected-slot'));
+      first.classList.add('selected-slot');
+      hidden.value = (first.dataset.time || '').trim();
     }
   }
 

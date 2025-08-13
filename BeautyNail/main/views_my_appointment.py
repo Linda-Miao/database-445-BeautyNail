@@ -11,7 +11,7 @@ from .views_appointment import (
     _normalize_services,
     _services_prices_and_total,
     _load_appointment_service_rows,
-    _norm_hms_str
+    _norm_hms_str,
 )
 
 # -------- My Appointments List --------

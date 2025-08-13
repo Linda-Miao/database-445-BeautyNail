@@ -3,82 +3,213 @@
 {% block title %}BeautyNailNet - Home{% endblock %}
 
 {% block content %}
-<div class="container">
-
-    <!-- Stats Section -->
-    <div class="row text-center mb-5">
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="text-pink fw-bold">{{ customers_count }}+</h2>
-                    <p class="mb-0">Happy Customers</p>
+    
+    <div class="container">
+        <h2 style="text-align: center; color: #2c2c2c; font-size: 2.5rem; margin-bottom: 1rem;">About This Database Project</h2>
+        <p style="text-align: center; color: #666; font-size: 1.2rem; margin-bottom: 3rem;">A comprehensive web-based database application for nail 
+salon management</p>
+        
+        <!-- Project Overview -->
+        <section class="project-section">
+            <h2>Project Overview</h2>
+            <p>This BeautyNailNet application is a comprehensive database-driven web system developed as part of our database course curriculum. The 
+project demonstrates the integration of modern web technologies with robust database design principles to create a fully functional nail salon 
+management system.</p>
+            
+            <p>The application serves as both a customer-facing website for booking appointments and viewing services, as well as a backend management 
+system for handling customer data, appointment scheduling, and business operations. This project showcases the practical application of database 
+concepts including normalization, SQL queries, and web-database integration.</p>
+            
+            <h3>Course Information</h3>
+            <p><strong>Course:</strong> TCSS445: Database Systems Design</p>
+            <p><strong>Institution:</strong> University of Washington Tacoma</p>
+            <p><strong>Quarter:</strong> Summer  2025</p>
+            <p><strong>Project Phase:</strong> Phase III</p>
+        </section>
+        
+        <!-- Technology Stack -->
+        <section class="project-section">
+            <h2>Technology Stack</h2>
+            
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <div class="tech-title">🐍 Backend Framework</div>
+                    <div class="tech-description">Django (Python) - Robust web framework for rapid development with built-in ORM for database 
+operations</div>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-title">🗄️ Database</div>
+                    <div class="tech-description">MySQL 8.0 - Relational database management system for storing customer, appointment, and service 
+data</div>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-title">🎨 Frontend</div>
+                    <div class="tech-description">HTML5, CSS3, JavaScript - Modern web technologies for responsive and interactive user 
+interfaces</div>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-title">🐳 Development Tools</div>
+                    <div class="tech-description">Docker, phpMyAdmin - Containerized development environment and database administration</div>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-title">📱 Design Approach</div>
+                    <div class="tech-description">Responsive Web Design - Mobile-first approach ensuring compatibility across all devices</div>
+                </div>
+                
+                <div class="tech-item">
+                    <div class="tech-title">🔗 Version Control</div>
+                    <div class="tech-description">Git & GitHub - Source code management and collaborative development</div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="text-pink fw-bold">{{ appointments_count }}+</h2>
-                    <p class="mb-0">Appointments</p>
+        </section>
+        
+        <!-- Project Team -->
+        <section class="project-section">
+            <h2>Project Team & Contact Information</h2>
+            
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-role">👩‍💻 Frontend Developer</div>
+                    <div class="member-name">Linda Miao</div>
+                    <div class="member-contact">Email: linda.miao@example.com</div>
+                    <div class="member-contact">LinkedIn: linkedin.com/in/linda-m-14166517a/</div>
+                    <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;">
+                        Responsible for: UI/UX Design, Frontend Development, Responsive Design, User Interface Implementation
+                    </div>
+                </div>
+                
+                <div class="team-member">
+                    <div class="member-role">🗄️ Database Developer</div>
+                    <div class="member-name">Bao Thinh Diep</div>
+                    <div class="member-contact">Email: [Bao.email@example.com]</div>
+                    <div class="member-contact">Contact: linkedin.com/in/bao-t-14166517a/</div>
+                    <div style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.9;">
+                        Responsible for: Database Design, SQL Queries, Backend Integration, Data Management
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="text-pink fw-bold">98%</h2>
-                    <p class="mb-0">Satisfaction Rate</p>
+            
+            <div style="text-align: center; margin-top: 2rem; padding: 2rem; background: #f8f9fa; border-radius: 10px;">
+                <h3 style="color: #e91e63; margin-bottom: 1rem;">Project Contact</h3>
+                <p><strong>📧 Email:</strong> hello@beautynailnet.com</p>
+                <p><strong>📞 Phone:</strong> (360) 123-4567</p>
+                <p><strong>📍 Location:</strong> Lacey, Washington</p>
+                <p><strong>🌐 Repository:</strong> <a href="https://github.com/Linda-Miao/beautynailnet-integration" style="color: #e91e63;">GitHub 
+Repository</a></p>
+            </div>
+        </section>
+        
+        <!-- Database Features -->
+        <section class="project-section">
+            <h2>Database Application Features</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <div class="feature-title">Customer Management</div>
+                    <div class="feature-description">Comprehensive customer database with personal information, appointment history, preferences, and 
+loyalty program tracking.</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <div class="feature-title">Appointment Scheduling</div>
+                    <div class="feature-description">Dynamic appointment booking system with real-time availability, service selection, and automated 
+confirmation.</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💅</div>
+                    <div class="feature-title">Service Catalog</div>
+                    <div class="feature-description">Complete service database with pricing, duration, descriptions, and popularity tracking for 
+business analytics.</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Business Analytics</div>
+                    <div class="feature-description">Advanced SQL queries for reporting customer trends, revenue analysis, and operational 
+insights.</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <div class="feature-title">Data Security</div>
+                    <div class="feature-description">Secure database design with proper normalization, data validation, and user access controls.</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">Web Interface</div>
+                    <div class="feature-description">Responsive web application providing seamless user experience across desktop and mobile 
+devices.</div>
                 </div>
             </div>
-        </div>
+        </section>
+        
+        <!-- Project Objectives -->
+        <section class="project-section">
+            <h2>Project Objectives & Learning Outcomes</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                <div>
+                    <h3>📚 Academic Objectives</h3>
+                    <ul style="color: #666; line-height: 1.8;">
+                        <li>Demonstrate database design principles and normalization</li>
+                        <li>Implement complex SQL queries for business operations</li>
+                        <li>Integrate database systems with web applications</li>
+                        <li>Apply security best practices in database management</li>
+                        <li>Create responsive and user-friendly interfaces</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>🎯 Technical Skills Demonstrated</h3>
+                    <ul style="color: #666; line-height: 1.8;">
+                        <li>Full-stack web development (Frontend + Backend)</li>
+                        <li>Database design and SQL query optimization</li>
+                        <li>Modern web framework implementation (Django)</li>
+                        <li>Responsive design and user experience principles</li>
+                        <li>Version control and collaborative development</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Project Status -->
+        <section style="background: linear-gradient(135deg, #e91e63, #ad1457); color: white; padding: 3rem; border-radius: 15px; text-align: center; 
+margin: 2rem 0;">
+            <h2 style="color: white; margin-bottom: 1rem;">Project Status & Future Development</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9;">This project is part of TCSS445: Database Systems Design (Summer 2025) 
+and represents Phase III of our comprehensive development process. We are currently working intensively on multiple Phase III components as we 
+approach our August 20th presentation deadline.</p>
+           
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin: 2rem 0;">
+                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 10px;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+                    <div style="font-weight: bold;">Phase I</div>
+                    <div style="font-size: 0.9rem; opacity: 0.8;">Database Design</div>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 10px;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+	            <div style="font-weight: bold;">Phase II</div>                   
+      	            <div style="font-size: 0.9rem; opacity: 0.8;">Implementation</div>										
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 10px;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚧</div>
+                    <div style="font-weight: bold;">Phase III</div>
+                    <div style="font-size: 0.9rem; opacity: 0.8;">Design & App</div>      
+             </div>                
+           </div>
+            
+            <a href="/" style="background: white; color: #e91e63; padding: 1rem 2rem; text-decoration: none; border-radius: 25px; font-weight: bold; 
+font-size: 1.1rem; margin-top: 1rem; display: inline-block;">View Application</a>
+        </section>
     </div>
-
-    <!-- Premium Services -->
-    <h2 class="text-center text-pink mb-4 fw-bold">Our Premium Services</h2>
-    <div class="row text-center">
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <div class="fs-1">💅</div>
-                    <h5 class="mt-3">Signature Manicure</h5>
-                    <p class="fw-bold text-pink">$65</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <div class="fs-1">🎨</div>
-                    <h5 class="mt-3">Nail Art Design</h5>
-                    <p class="fw-bold text-pink">$95</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <div class="fs-1">✨</div>
-                    <h5 class="mt-3">Luxury Pedicure</h5>
-                    <p class="fw-bold text-pink">$85</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6 mb-4">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <div class="fs-1">💎</div>
-                    <h5 class="mt-3">Gel Enhancement</h5>
-                    <p class="fw-bold text-pink">$110</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Buttons -->
-    <div class="text-center mt-4">
-        <a href="/services/" class="btn btn-pink me-2">View All Services</a>
-        <a href="/appointments/" class="btn btn-outline-pink">Book Appointment</a>
-    </div>
-
-</div>
 {% endblock %}

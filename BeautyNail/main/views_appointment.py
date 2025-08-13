@@ -2,11 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db import connection, transaction
 from django.contrib import messages
 from django.utils import timezone
-from .models import Appointment  
-from django.contrib.auth.decorators import login_required
-from datetime import datetime, timedelta, time
+from django.contrib.auth.decorators import login_required  # optional; use if you want auth
+from datetime import datetime, timedelta, time 
 import re
 
+from .models import Appointment  # make sure Appointment model is correct
 
 
 # ---------- option loaders ----------
@@ -84,28 +84,21 @@ def _services_prices_and_total(service_ids):
     total_amount = sum(price_map.get(sid, 0) for sid in service_ids) or None
     return price_map, total_amount
 
-def _parse_start_end_time(request, template_name, context):
+def _load_appointment_service_rows(appointment_id):
     """
-    Extracts and validates 'start_datetime' from request.POST.
-    Returns (appointment_date, start_time, end_time) if valid, or
-    renders the given template with context + error message if invalid.
+    Returns a list of dicts for existing rows to preload in edit:
+    [{'service_id': 3, 'service_name': 'Pedicure', 'price': Decimal('30.00'), 'color': 'Red'}, ...]
     """
-    start_str = (request.POST.get("start_datetime") or "").strip()
-    if not start_str:
-        messages.error(request, "Please pick a date and time.")
-        return None, render(request, template_name, context)
-
-    try:
-        start_dt = datetime.strptime(start_str, "%Y-%m-%d %H:%M:%S")
-    except ValueError:
-        messages.error(request, "Invalid date/time format.")
-        return None, render(request, template_name, context)
-
-    appointment_date = start_dt.date().strftime("%Y-%m-%d")
-    start_time = start_dt.time().strftime("%H:%M:%S")
-    end_time = (start_dt + timedelta(minutes=90)).time().strftime("%H:%M:%S")
-
-    return (appointment_date, start_time, end_time), None
+    with connection.cursor() as c:
+        c.execute("""
+            SELECT aps.service_id, s.service_name, aps.service_price, aps.polish_color
+            FROM APPOINTMENT_SERVICE aps, SERVICE s
+            WHERE aps.service_id = s.service_id
+              AND aps.appointment_id = %s
+            ORDER BY aps.appointment_service_id;
+        """, [appointment_id])
+        rows = c.fetchall()
+    return [{'service_id': r[0], 'service_name': r[1], 'price': r[2], 'color': r[3]} for r in rows]
 
 def _norm_hms_str(val: str) -> str:
     """
@@ -139,7 +132,18 @@ def _norm_hms_str(val: str) -> str:
     return ""
 
 
-# ---------- list / load ----------
+# Consistent time slots used in admin edit template
+ADMIN_TIME_SLOTS = [
+    ("09:00:00", "9:00 AM"),
+    ("10:30:00", "10:30 AM"),
+    ("12:00:00", "12:00 PM"),
+    ("13:30:00", "1:30 PM"),
+    ("15:00:00", "3:00 PM"),
+    ("18:30:00", "6:30 PM"),
+]
+
+
+# ---------- list ----------
 
 def appointment_list(request):
     with connection.cursor() as c:
@@ -160,22 +164,6 @@ def appointment_list(request):
     } for r in rows]
     return render(request, 'appointments/appointments.html', {'appointments': appts})
 
-def _load_appointment_service_rows(appointment_id):
-    """
-    Returns a list of dicts for existing rows to preload in edit:
-    [{'service_id': 3, 'service_name': 'Pedicure', 'price': Decimal('30.00'), 'color': 'Red'}, ...]
-    """
-    with connection.cursor() as c:
-        c.execute("""
-            SELECT aps.service_id, s.service_name, aps.service_price, aps.polish_color
-            FROM APPOINTMENT_SERVICE aps, SERVICE s
-            WHERE aps.service_id = s.service_id
-            AND aps.appointment_id = %s
-            ORDER BY aps.appointment_service_id;
-        """, [appointment_id])
-        rows = c.fetchall()
-    return [{'service_id': r[0], 'service_name': r[1], 'price': r[2], 'color': r[3]} for r in rows]
-
 
 # ---------- create ----------
 
@@ -188,17 +176,31 @@ def appointment_add(request):
     if request.method == 'POST':
         customer_id = request.POST.get('customer_id')
         staff_id = request.POST.get('staff_id')
-        appointment_date = request.POST.get('appointment_date')
-        start_time = request.POST.get('start_time')
-        end_time = request.POST.get('end_time') or None
-        status = request.POST.get('status', 'scheduled').strip() or 'scheduled'
+        appointment_date = (request.POST.get('appointment_date') or '').strip()
+        start_time = _norm_hms_str((request.POST.get('start_time') or '').strip())
+        # allow explicit override, else auto-calc +90m
+        end_time = (request.POST.get('end_time') or '').strip() or None
+        status = (request.POST.get('status') or 'scheduled').strip() or 'scheduled'
         notes = request.POST.get('notes', '').strip() or None
 
         raw_service_ids = request.POST.getlist('service_ids[]')
         raw_colors = request.POST.getlist('polish_colors[]')
-
         service_ids, polish_colors = _normalize_services(raw_service_ids, raw_colors)
         price_map, total_amount = _services_prices_and_total(service_ids)
+
+        # basic validation for date & start_time (the grid fills these)
+        if not appointment_date or not start_time:
+            messages.error(request, "Please pick a date and a time.")
+            return render(request, 'appointments/appointment_add.html', {
+                'staff_opts': staff_opts,
+                'cust_opts': cust_opts,
+                'svc_opts': svc_opts,
+            })
+
+        # auto-calc end_time if missing (+90 min)
+        if not end_time:
+            start_dt = datetime.strptime(f"{appointment_date} {start_time}", "%Y-%m-%d %H:%M:%S")
+            end_time = (start_dt + timedelta(minutes=90)).strftime("%H:%M:%S")
 
         appt = Appointment.objects.create(
             customer_id=customer_id,
@@ -227,6 +229,7 @@ def appointment_add(request):
         messages.success(request, 'Appointment created.')
         return redirect('appointment_list')
 
+    # GET
     return render(request, 'appointments/appointment_add.html', {
         'staff_opts': staff_opts,
         'cust_opts': cust_opts,
@@ -246,18 +249,40 @@ def appointment_edit(request, appointment_id):
     if request.method == 'POST':
         appt.customer_id = request.POST.get('customer_id')
         appt.staff_id = request.POST.get('staff_id')
-        appt.appointment_date = request.POST.get('appointment_date')
-        appt.start_time = request.POST.get('start_time')
-        appt.end_time = request.POST.get('end_time') or None
-        appt.status = request.POST.get('status', 'scheduled').strip() or 'scheduled'
+        appt.appointment_date = (request.POST.get('appointment_date') or '').strip()
+        appt.start_time = _norm_hms_str((request.POST.get('start_time') or '').strip())
+        # keep provided end_time or leave as-is if you want; here we respect posted value
+        appt.end_time = (request.POST.get('end_time') or '').strip() or None
+        appt.status = (request.POST.get('status') or 'scheduled').strip() or 'scheduled'
         appt.notes = request.POST.get('notes', '').strip() or None
 
         raw_service_ids = request.POST.getlist('service_ids[]')
         raw_colors = request.POST.getlist('polish_colors[]')
-
         service_ids, colors = _normalize_services(raw_service_ids, raw_colors)
         price_map, total_amount = _services_prices_and_total(service_ids)
         appt.total_amount = total_amount
+
+        # validate date + time (hidden fields from grid)
+        if not appt.appointment_date or not appt.start_time:
+            messages.error(request, "Please pick a date and a time.")
+            status_choices = ["scheduled", "completed", "cancelled", "pending"]
+            current_services = _load_appointment_service_rows(appt.appointment_id)
+            # Recompute selected_time to keep highlight
+            selected_time = _norm_hms_str(appt.start_time)
+            slot_values = [t for t, _ in ADMIN_TIME_SLOTS]
+            if selected_time not in slot_values:
+                selected_time = ""
+            return render(request, 'appointments/appointment_edit.html', {
+                'appt': appt,
+                'staff_opts': staff_opts,
+                'cust_opts': cust_opts,
+                'svc_opts': svc_opts,
+                'status_choices': status_choices,
+                'current_services': current_services,
+                'time_slots': ADMIN_TIME_SLOTS,
+                'selected_time': selected_time,
+            })
+
         appt.save()
 
         with connection.cursor() as c:
@@ -275,8 +300,15 @@ def appointment_edit(request, appointment_id):
         messages.success(request, 'Appointment updated.')
         return redirect('appointment_list')
 
+    # GET
     status_choices = ["scheduled", "completed", "cancelled", "pending"]
     current_services = _load_appointment_service_rows(appt.appointment_id)
+
+    # Preselect the grid on load
+    selected_time = _norm_hms_str(appt.start_time)
+    slot_values = [t for t, _ in ADMIN_TIME_SLOTS]
+    if selected_time not in slot_values:
+        selected_time = ""
 
     return render(request, 'appointments/appointment_edit.html', {
         'appt': appt,
@@ -285,6 +317,8 @@ def appointment_edit(request, appointment_id):
         'svc_opts': svc_opts,
         'status_choices': status_choices,
         'current_services': current_services,
+        'time_slots': ADMIN_TIME_SLOTS,
+        'selected_time': selected_time,
     })
 
 
@@ -297,4 +331,3 @@ def appointment_delete(request, appointment_id):
         messages.success(request, 'Appointment deleted.')
         return redirect('appointment_list')
     return redirect('appointment_list')
-

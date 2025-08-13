@@ -1,10 +1,9 @@
-{% extends 'base.html' %} {% block content %}
-<div
-  class="d-flex justify-content-center align-items-center"
-  style="min-height: 80vh"
->
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh">
   <div>
-    <h2 class="text-center mb-4">Add Appointment</h2>
+    <h2 class="text-center mb-4">Add Appointment (Admin)</h2>
     <form method="post" action="{% url 'appointment_add' %}">
       {% csrf_token %}
       <table>
@@ -19,40 +18,48 @@
             </select>
           </td>
         </tr>
+
         <tr>
           <td><label for="staff_id">Staff:</label></td>
           <td>
             <select id="staff_id" name="staff_id" required>
               <option value="">-- Select Active Staff --</option>
               {% for s in staff_opts %}
-              <option value="{{ s.id }}">
-                {{ s.name }}{% if s.specialty %} — {{ s.specialty }}{% endif %}
-              </option>
+              <option value="{{ s.id }}">{{ s.name }}{% if s.specialty %} — {{ s.specialty }}{% endif %}</option>
               {% endfor %}
             </select>
           </td>
         </tr>
+
         <tr>
-          <td><label for="appointment_date">Date:</label></td>
+          <td><label>Appointment Date & Time:</label></td>
           <td>
-            <input
-              type="date"
-              id="appointment_date"
-              name="appointment_date"
-              required
-            />
+            <div class="calendar-section bg-white rounded-4 p-4 shadow-sm" style="max-width: 500px;">
+              <h3 class="calendar-title h5 mb-3">Pick a date & time</h3>
+
+              <!-- DATE (Flatpickr mounts here) -->
+              <div id="inline_date"></div>
+
+              <!-- Hidden fields submitted to backend -->
+              <input type="hidden" id="appointment_date" name="appointment_date" required>
+              <input type="hidden" id="start_time" name="start_time" required>
+
+              <!-- TIME GRID (same slots used elsewhere) -->
+              <div class="mt-4">
+                <h6 class="mb-3">Available Times</h6>
+                <div id="time_grid" class="row g-3">
+                  <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="09:00:00">9:00 AM</button></div>
+                  <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="10:30:00">10:30 AM</button></div>
+                  <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="12:00:00">12:00 PM</button></div>
+                  <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="13:30:00">1:30 PM</button></div>
+                  <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="15:00:00">3:00 PM</button></div>
+                  <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="18:30:00">6:30 PM</button></div>
+                </div>
+              </div>
+            </div>
           </td>
         </tr>
-        <tr>
-          <td><label for="start_time">Start Time:</label></td>
-          <td>
-            <input type="time" id="start_time" name="start_time" required />
-          </td>
-        </tr>
-        <tr>
-          <td><label for="end_time">End Time:</label></td>
-          <td><input type="time" id="end_time" name="end_time" /></td>
-        </tr>
+
         <tr>
           <td><label for="status">Status:</label></td>
           <td>
@@ -64,62 +71,35 @@
             </select>
           </td>
         </tr>
+
         <tr>
           <td valign="top"><label>Services:</label></td>
           <td>
             <div id="services-list">
               <div class="service-row mb-2">
-                <select
-                  name="service_ids[]"
-                  class="form-select d-inline-block"
-                  style="width: 320px"
-                >
+                <select name="service_ids[]" class="form-select d-inline-block" style="width: 320px">
                   <option value="">-- Select Service --</option>
                   {% for s in svc_opts %}
-                  <option value="{{ s.id }}">
-                    {{ s.name }} (${{ s.price }})
-                  </option>
+                  <option value="{{ s.id }}">{{ s.name }} (${{ s.price }})</option>
                   {% endfor %}
                 </select>
-                <input
-                  type="text"
-                  name="polish_colors[]"
-                  class="form-control d-inline-block ms-2"
-                  style="width: 180px"
-                  placeholder="Polish color (optional)"
-                />
-                <button
-                  type="button"
-                  class="btn btn-outline-primary btn-sm ms-2"
-                  onclick="addServiceRow()"
-                >
-                  +
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm ms-1"
-                  onclick="removeServiceRow(this)"
-                >
-                  −
-                </button>
+                <input type="text" name="polish_colors[]" class="form-control d-inline-block ms-2" style="width: 180px" placeholder="Polish color (optional)">
+                <button type="button" class="btn btn-outline-primary btn-sm ms-2" onclick="addServiceRow()">+</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm ms-1" onclick="removeServiceRow(this)">−</button>
               </div>
             </div>
           </td>
         </tr>
+
         <tr>
           <td><label for="notes">Notes:</label></td>
-          <td>
-            <textarea id="notes" name="notes" rows="3" cols="40"></textarea>
-          </td>
+          <td><textarea id="notes" name="notes" rows="3" cols="40"></textarea></td>
         </tr>
+
         <tr>
           <td colspan="2" style="text-align: center; padding-top: 12px">
-            <button type="submit" class="btn btn-success me-2">
-              Add Appointment
-            </button>
-            <a href="{% url 'appointment_list' %}" class="btn btn-secondary"
-              >Cancel</a
-            >
+            <button type="submit" class="btn btn-success me-2">Add Appointment</button>
+            <a href="{% url 'appointment_list' %}" class="btn btn-secondary">Cancel</a>
           </td>
         </tr>
       </table>
@@ -127,28 +107,5 @@
   </div>
 </div>
 
-{% comment %} <script>
-  function addServiceRow() {
-    const container = document.getElementById("services-list");
-    const first = container.querySelector(".service-row");
-    const clone = first.cloneNode(true);
-
-    // reset fields
-    const sel = clone.querySelector('select[name="service_ids[]"]');
-    if (sel) sel.value = "";
-    const colorInput = clone.querySelector('input[name="polish_colors[]"]');
-    if (colorInput) colorInput.value = "";
-
-    container.appendChild(clone);
-  }
-  function removeServiceRow(btn) {
-    const container = document.getElementById("services-list");
-    const rows = container.querySelectorAll(".service-row");
-    if (rows.length > 1) {
-      btn.closest(".service-row").remove();
-    }
-  }
-</script> {% endcomment %}
-{% load static %}
-<script src="{% static 'js/appointments.js' %}" defer></script>
+<script src="{% static 'js/appointments.js' %}?v=23" defer></script>
 {% endblock %}

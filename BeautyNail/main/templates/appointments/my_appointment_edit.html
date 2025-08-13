@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
-<div
-  class="d-flex justify-content-center align-items-center"
-  style="min-height: 80vh"
->
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh">
   <div>
     <h2 class="text-center mb-4">Edit Appointment</h2>
     <form method="post">
@@ -22,43 +20,43 @@
             </select>
           </td>
         </tr>
+
         <tr>
-          <td><label for="appointment_date">Date:</label></td>
+          <td><label>Appointment Date & Time:</label></td>
           <td>
-            <input
-              type="date"
-              id="appointment_date"
-              name="appointment_date"
-              value="{{ appt.appointment_date|date:'Y-m-d' }}"
-              required
-            />
+            <div class="calendar-section bg-white rounded-4 p-4 shadow-sm" style="max-width: 500px;">
+              <h3 class="calendar-title h5 mb-3">Pick a date & time</h3>
+
+              <!-- DATE (Flatpickr mounts here) -->
+              <div id="inline_date" data-selected-date="{{ appt.appointment_date|date:'Y-m-d' }}"></div>
+
+              <!-- Hidden fields submitted to backend -->
+              <input type="hidden" id="appointment_date" name="appointment_date"
+                     value="{{ appt.appointment_date|date:'Y-m-d' }}" required>
+              <input type="hidden" id="start_time" name="start_time"
+                     value="{{ selected_time }}" required>
+
+              <!-- TIME GRID -->
+              <div class="mt-4">
+                <h6 class="mb-3">Available Times</h6>
+                <div id="time_grid" class="row g-3" data-selected-time="{{ selected_time }}">
+                  {% for time_val, time_label in time_slots %}
+                  <div class="col-4">
+                    <button type="button"
+                            class="btn {% if selected_time == time_val %}btn-primary{% else %}btn-light{% endif %} w-100 time-slot-btn"
+                            data-time="{{ time_val }}">
+                      {{ time_label }}
+                    </button>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
           </td>
         </tr>
-        <tr>
-          <td><label for="start_time">Start Time:</label></td>
-          <td>
-            <input
-              type="time"
-              id="start_time"
-              name="start_time"
-              value="{{ appt.start_time|time:'H:i' }}"
-              required
-            />
-          </td>
-        </tr>
-        <tr>
-          <td><label for="end_time">End Time:</label></td>
-          <td>
-            <input
-              type="time"
-              id="end_time"
-              name="end_time"
-              value="{{ appt.end_time|time:'H:i' }}"
-            />
-          </td>
-        </tr>
-        <!-- status hidden: always forced to pending on save -->
+
         <input type="hidden" name="status" value="pending" />
+
         <tr>
           <td valign="top"><label>Services:</label></td>
           <td>
@@ -66,11 +64,7 @@
               {% if current_services and current_services|length > 0 %}
                 {% for svc in current_services %}
                 <div class="service-row mb-2">
-                  <select
-                    name="service_ids[]"
-                    class="form-select d-inline-block"
-                    style="width: 320px"
-                  >
+                  <select name="service_ids[]" class="form-select d-inline-block" style="width: 320px">
                     <option value="">-- Select Service --</option>
                     {% for s in svc_opts %}
                     <option value="{{ s.id }}" {% if s.id == svc.service_id %}selected{% endif %}>
@@ -78,84 +72,42 @@
                     </option>
                     {% endfor %}
                   </select>
-                  <input
-                    type="text"
-                    name="polish_colors[]"
-                    class="form-control d-inline-block ms-2"
-                    style="width: 180px"
-                    placeholder="Polish color (optional)"
-                    value="{{ svc.color|default:'' }}"
-                  />
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary btn-sm ms-2"
-                    onclick="addServiceRow()"
-                  >
-                    +
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary btn-sm ms-1"
-                    onclick="removeServiceRow(this)"
-                  >
-                    −
-                  </button>
+                  <input type="text" name="polish_colors[]" class="form-control d-inline-block ms-2"
+                         style="width: 180px" placeholder="Polish color (optional)"
+                         value="{{ svc.color|default:'' }}">
+                  <button type="button" class="btn btn-outline-primary btn-sm ms-2" onclick="addServiceRow()">+</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm ms-1" onclick="removeServiceRow(this)">−</button>
                 </div>
                 {% endfor %}
               {% else %}
                 <div class="service-row mb-2">
-                  <select
-                    name="service_ids[]"
-                    class="form-select d-inline-block"
-                    style="width: 320px"
-                  >
+                  <select name="service_ids[]" class="form-select d-inline-block" style="width: 320px">
                     <option value="">-- Select Service --</option>
                     {% for s in svc_opts %}
-                    <option value="{{ s.id }}">
-                      {{ s.name }} (${{ s.price }})
-                    </option>
+                    <option value="{{ s.id }}">{{ s.name }} (${{ s.price }})</option>
                     {% endfor %}
                   </select>
-                  <input
-                    type="text"
-                    name="polish_colors[]"
-                    class="form-control d-inline-block ms-2"
-                    style="width: 180px"
-                    placeholder="Polish color (optional)"
-                  />
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary btn-sm ms-2"
-                    onclick="addServiceRow()"
-                  >
-                    +
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary btn-sm ms-1"
-                    onclick="removeServiceRow(this)"
-                  >
-                    −
-                  </button>
+                  <input type="text" name="polish_colors[]" class="form-control d-inline-block ms-2"
+                         style="width: 180px" placeholder="Polish color (optional)">
+                  <button type="button" class="btn btn-outline-primary btn-sm ms-2" onclick="addServiceRow()">+</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm ms-1" onclick="removeServiceRow(this)">−</button>
                 </div>
               {% endif %}
             </div>
           </td>
         </tr>
+
         <tr>
           <td><label for="notes">Notes:</label></td>
           <td>
             <textarea id="notes" name="notes" rows="3" cols="40">{{ appt.notes }}</textarea>
           </td>
         </tr>
+
         <tr>
           <td colspan="2" style="text-align: center; padding-top: 12px">
-            <button type="submit" class="btn btn-success me-2">
-              Save Changes
-            </button>
-            <a href="{% url 'my_appointments' %}" class="btn btn-secondary"
-              >Cancel</a
-            >
+            <button type="submit" class="btn btn-success me-2">Save Changes</button>
+            <a href="{% url 'my_appointments' %}" class="btn btn-secondary">Cancel</a>
           </td>
         </tr>
       </table>
@@ -163,28 +115,5 @@
   </div>
 </div>
 
-{% comment %} <script>
-  function addServiceRow() {
-    const container = document.getElementById("services-list");
-    const first = container.querySelector(".service-row");
-    const clone = first.cloneNode(true);
-
-    // reset fields in the cloned row
-    const sel = clone.querySelector('select[name="service_ids[]"]');
-    if (sel) sel.value = "";
-    const colorInput = clone.querySelector('input[name="polish_colors[]"]');
-    if (colorInput) colorInput.value = "";
-
-    container.appendChild(clone);
-  }
-  function removeServiceRow(btn) {
-    const container = document.getElementById("services-list");
-    const rows = container.querySelectorAll(".service-row");
-    if (rows.length > 1) {
-      btn.closest(".service-row").remove();
-    }
-  }
-</script> {% endcomment %}
-{% load static %}
-<script src="{% static 'js/appointments.js' %}" defer></script>
+<script src="{% static 'js/appointments.js' %}?v=20" defer></script>
 {% endblock %}

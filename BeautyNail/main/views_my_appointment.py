@@ -11,7 +11,7 @@ from .views_appointment import (
     _normalize_services,
     _services_prices_and_total,
     _load_appointment_service_rows,
-    _parse_start_end_time
+    _norm_hms_str
 )
 
 # -------- My Appointments List --------
@@ -117,13 +117,13 @@ def my_appointment_add(request):
 
 
 # -------- Edit My Appointment --------
+# -------- Edit My Appointment --------
 @login_required
 @transaction.atomic
 def my_appointment_edit(request, appointment_id):
     customer = get_object_or_404(Customer, user_id=request.user.id)
     appt = get_object_or_404(Appointment, pk=appointment_id, customer_id=customer.customer_id)
 
-    # Only allow editing if still pending or scheduled
     if appt.status not in ["pending", "scheduled"]:
         messages.error(request, 'You can only edit pending or scheduled appointments.')
         return redirect('my_appointments')
@@ -131,21 +131,52 @@ def my_appointment_edit(request, appointment_id):
     staff_opts = _staff_options()
     svc_opts = _service_options()
 
+    time_slots = [
+        ("09:00:00", "9:00 AM"),
+        ("10:30:00", "10:30 AM"),
+        ("12:00:00", "12:00 PM"),
+        ("13:30:00", "1:30 PM"),
+        ("15:00:00", "3:00 PM"),
+        ("18:30:00", "6:30 PM"),
+    ]
+
+    # Normalize and snap the existing start_time to one of the slots (if possible)
+    normalized = _norm_hms_str(appt.start_time)
+    slot_values = [t for (t, _) in time_slots]
+    selected_time = normalized if normalized in slot_values else ""
+
     if request.method == 'POST':
-        appt.staff_id = request.POST.get('staff_id')
-        appt.appointment_date = request.POST.get('appointment_date')
-        appt.start_time = request.POST.get('start_time')
-        appt.end_time = request.POST.get('end_time') or None
-        appt.notes = request.POST.get('notes', '').strip() or None
+        staff_id = request.POST.get('staff_id')
+        appointment_date = (request.POST.get('appointment_date') or '').strip()
+        start_time = _norm_hms_str((request.POST.get('start_time') or '').strip())
+        notes = request.POST.get('notes', '').strip() or None
+
+        if not appointment_date or not start_time:
+            messages.error(request, "Please pick a date and a time.")
+            current_services = _load_appointment_service_rows(appt.appointment_id)
+            return render(request, 'appointments/my_appointment_edit.html', {
+                'appt': appt,
+                'staff_opts': staff_opts,
+                'svc_opts': svc_opts,
+                'current_services': current_services,
+                'time_slots': time_slots,
+                'selected_time': selected_time,  # keep highlight
+            })
+
+        start_dt = datetime.strptime(f"{appointment_date} {start_time}", "%Y-%m-%d %H:%M:%S")
+        end_time = (start_dt + timedelta(minutes=90)).strftime("%H:%M:%S")
 
         raw_service_ids = request.POST.getlist('service_ids[]')
         raw_colors = request.POST.getlist('polish_colors[]')
-
         service_ids, colors = _normalize_services(raw_service_ids, raw_colors)
         price_map, total_amount = _services_prices_and_total(service_ids)
-        appt.total_amount = total_amount
 
-        # Always set back to pending after edit
+        appt.staff_id = staff_id
+        appt.appointment_date = appointment_date
+        appt.start_time = start_time
+        appt.end_time = end_time
+        appt.notes = notes
+        appt.total_amount = total_amount
         appt.status = "pending"
         appt.save()
 
@@ -164,11 +195,13 @@ def my_appointment_edit(request, appointment_id):
         messages.success(request, 'Appointment updated and set to pending.')
         return redirect('my_appointments')
 
+    # GET
     current_services = _load_appointment_service_rows(appt.appointment_id)
-
     return render(request, 'appointments/my_appointment_edit.html', {
         'appt': appt,
         'staff_opts': staff_opts,
         'svc_opts': svc_opts,
         'current_services': current_services,
+        'time_slots': time_slots,
+        'selected_time': selected_time,  # exact HH:MM:SS or ''
     })

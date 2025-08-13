@@ -27,8 +27,28 @@
       .flatpickr-day:hover { background:rgba(233,30,99,.1); color:#e91e63; }
       .flatpickr-day.selected { background:#e91e63; border-color:#e91e63; color:#fff; }
       .flatpickr-day.today:not(.selected) {
-        background:transparent; border-color:#e91e63; color:#e91e63; box-shadow:inset 0 0 0 1px #e91e63;
-      }
+        background:transparent; border-color:#e91e63; color:#e91e63; box-shadow:inset 0 0 0 1px #e91e63;}
+         /* Highlight the selected time slot button */
+      .time-slot-btn.btn-primary {
+    background-color: #e91e63 !important;
+    border-color: #e91e63 !important;
+    color: #fff !important;
+  }
+
+  /* Unselected time slot buttons */
+  .time-slot-btn.btn-light {
+    background-color: #f8f9fa;
+    border-color: #ddd;
+    color: #000;
+  }
+      /* Global selected time slot highlight */
+ #time_grid .time-slot-btn.selected-slot {
+    background: #e91e63 !important;
+    border-color: #e91e63 !important;
+    color: #fff !important;
+    box-shadow: 0 0 0 .15rem rgba(233,30,99,.35);
+    font-weight: 600;
+  }
     </style>
     <link rel="stylesheet" href="{% static 'css/datetimepicker.css' %}">
     {% block extra_head %}{% endblock %}

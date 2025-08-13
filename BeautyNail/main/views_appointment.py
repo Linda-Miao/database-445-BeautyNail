@@ -4,7 +4,8 @@ from django.contrib import messages
 from django.utils import timezone
 from .models import Appointment  
 from django.contrib.auth.decorators import login_required
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
+import re
 
 
 
@@ -105,6 +106,37 @@ def _parse_start_end_time(request, template_name, context):
     end_time = (start_dt + timedelta(minutes=90)).time().strftime("%H:%M:%S")
 
     return (appointment_date, start_time, end_time), None
+
+def _norm_hms_str(val: str) -> str:
+    """
+    Normalize any 'H:MM' / 'HH:MM' / 'H:MM:SS' / 'HH:MM:SS' to zero-padded 'HH:MM:SS'.
+    Returns '' if cannot parse.
+    """
+    if val is None:
+        return ""
+    s = str(val).strip()
+
+    # If it's a datetime.time, just format it
+    if isinstance(val, time):
+        return val.strftime("%H:%M:%S")
+
+    # Pad leading hour if like '9:00' or '9:00:00'
+    if re.match(r"^\d:\d{2}(:\d{2})?$", s):
+        s = "0" + s  # -> '09:00' or '09:00:00'
+
+    # Try strict parses
+    for fmt in ("%H:%M:%S", "%H:%M"):
+        try:
+            dt = datetime.strptime(s, fmt)
+            return dt.strftime("%H:%M:%S")
+        except ValueError:
+            continue
+
+    # Last resort: if looks like 'HH:MM:SSxxxx', trim to first 8 with padding
+    if re.match(r"^\d{2}:\d{2}:\d{2}", s):
+        return s[:8]
+
+    return ""
 
 
 # ---------- list / load ----------

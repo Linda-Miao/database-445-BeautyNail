@@ -124,50 +124,6 @@
     </form>
   </div>
 </div>
-
-{% comment %} <script>
-  function addServiceRow() {
-    const container = document.getElementById("services-list");
-    const first = container.querySelector(".service-row");
-    const clone = first.cloneNode(true);
-
-    // reset fields
-    const sel = clone.querySelector('select[name="service_ids[]"]');
-    if (sel) sel.value = "";
-    const colorInput = clone.querySelector('input[name="polish_colors[]"]');
-    if (colorInput) colorInput.value = "";
-
-    container.appendChild(clone);
-  }
-  function removeServiceRow(btn) {
-    const container = document.getElementById("services-list");
-    const rows = container.querySelectorAll(".service-row");
-    if (rows.length > 1) {
-      btn.closest(".service-row").remove();
-    }
-  }
-</script> {% endcomment %}
-{% comment %} <script>
-  flatpickr("#inline_datetime", {
-    inline: true,
-    enableTime: true,
-    minDate: "today",
-    minuteIncrement: 30,          // 30-min slots
-    dateFormat: "Y-m-d H:i:S",    // what backend parses
-    defaultDate: "today",
-    time_24hr: false,             // set true if you prefer 24h
-    // Flatpickr writes to the altInput or the element itself;
-    // we'll mirror the selected value into the hidden field:
-    onChange: function(selectedDates, dateStr) {
-      document.getElementById("start_datetime").value = dateStr;
-    },
-    onReady: function(selectedDates, dateStr, instance) {
-      // initialize hidden value on first paint
-      const v = dateStr || instance.formatDate(new Date(), "Y-m-d H:i:S");
-      document.getElementById("start_datetime").value = v;
-    }
-  });
-</script> {% endcomment %}
 {% load static %}
 <script src="{% static 'js/appointments.js' %}" defer></script>
 {% endblock %}

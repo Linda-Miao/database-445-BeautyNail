@@ -43,10 +43,11 @@
                   {% for time_val, time_label in time_slots %}
                   <div class="col-4">
                     <button type="button"
-                            class="btn {% if selected_time == time_val %}btn-primary{% else %}btn-light{% endif %} w-100 time-slot-btn"
-                            data-time="{{ time_val }}">
-                      {{ time_label }}
-                    </button>
+        class="btn btn-light w-100 time-slot-btn{% if selected_time == time_val %} selected-slot{% endif %}"
+        data-time="{{ time_val }}">
+  {{ time_label }}
+</button>
+                    
                   </div>
                   {% endfor %}
                 </div>
@@ -115,5 +116,5 @@
   </div>
 </div>
 
-<script src="{% static 'js/appointments.js' %}?v=20" defer></script>
+<script src="{% static 'js/appointments.js' %}?v=21" defer></script>
 {% endblock %}

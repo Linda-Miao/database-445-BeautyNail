@@ -79,6 +79,7 @@ function initTime() {
 }
 
 
+
   document.addEventListener('DOMContentLoaded', function () {
     initDate();
     initTime();

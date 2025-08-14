@@ -49,6 +49,7 @@ from .views_appointment import (
 
 def get_my_appointments_by_search(customer_id, query):
     sql = """
+
         SELECT
             a.appointment_id,                 -- PK for .raw()
             a.appointment_id AS id,

@@ -9,7 +9,7 @@
   <form method="get" class="mb-3">
     <div class="input-group">
       <input type="text" name="search" class="form-control"
-             placeholder="Search by review, customer, appointment, staff, rating, comment..."
+             placeholder="Search by customer name, appointment ID, staff name, rating, comment..."
              value="{{ search_query|default:'' }}">
       <button class="btn btn-outline-secondary" type="submit">Search</button>
     </div>
@@ -33,14 +33,14 @@
         {% for it in items %}
         <tr>
           <td>{{ it.review_id }}</td>
-          <td>{{ it.customer_id }}</td>
+          <td>{{ it.customer_name }}</td>
           <td>{{ it.appointment_id }}</td>
-          <td>{{ it.staff_id }}</td>
+          <td>{{ it.staff_name }}</td>
           <td>{{ it.rating }}</td>
           <td>{{ it.comment|default:"-" }}</td>
           <td>{{ it.review_date|date:"Y-m-d H:i" }}</td>
           <td class="actions-cell">
-            <a href="{% url 'review_edit' it.review_id %}" class="btn btn-primary btn-sm">Edit</a>
+            {% comment %} <a href="{% url 'review_edit' it.review_id %}" class="btn btn-primary btn-sm">Edit</a> {% endcomment %}
             <form method="post" action="{% url 'review_delete' it.review_id %}" style="display:inline;">
               {% csrf_token %}
               <button type="submit" class="btn btn-danger btn-sm"
@@ -60,8 +60,8 @@
       <form method="get" action="" class="mb-3" style="display:inline;">
         <button type="submit" class="btn btn-secondary btn-sm">Show All</button>
 
-        <a href="{% url 'review_add' %}" class="btn btn-success btn-sm ms-2"
-           style="margin-left: 8px;">Add New Review</a>
+        {% comment %} <a href="{% url 'review_add' %}" class="btn btn-success btn-sm ms-2"
+           style="margin-left: 8px;">Add New Review</a> {% endcomment %}
       </form>
     </div>
   </div>

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Customer,Review,Staff
-from django.db import connection
+from django.db import connection, IntegrityError
 from django.contrib.auth.models import User
 
 
@@ -55,6 +55,145 @@ def customer_add(request):
     return render(request, 'customers/customer_add.html')
 
 def customer_edit(request, customer_id):
+    # Load customer + linked auth user info
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT
+                c.customer_id,
+                c.first_name,
+                c.last_name,
+                c.phone,
+                c.email,
+                c.date_of_birth,
+                c.allergies,
+                c.preferred_color,
+                c.loyalty_points,
+                c.registration_date,
+                c.is_active,
+                c.user_id,
+                u.username
+            FROM customer c
+            LEFT JOIN auth_user u ON u.id = c.user_id
+            WHERE c.customer_id = %s
+        """, [customer_id])
+        row = cursor.fetchone()
+
+    if not row:
+        return render(request, '404.html')
+
+    # Map row -> dict for template
+    cust = {
+        'customer_id': row[0],
+        'first_name': row[1],
+        'last_name': row[2],
+        'phone': row[3],
+        'email': row[4],
+        'date_of_birth': row[5].isoformat() if row[5] else '',
+        'allergies': row[6] or '',
+        'preferred_color': row[7] or '',
+        'loyalty_points': row[8],
+        'registration_date': row[9],
+        'is_active': bool(row[10]),
+        'user_id': row[11],
+        'username': row[12] or '',
+    }
+
+    if request.method == 'POST':
+        data = request.POST
+
+        # 1) Update the CUSTOMER row (raw SQL, same as your style)
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE customer
+                SET first_name=%s, last_name=%s, phone=%s, email=%s,
+                    date_of_birth=%s, allergies=%s, preferred_color=%s,
+                    loyalty_points=%s, is_active=%s
+                WHERE customer_id=%s
+                """,
+                [
+                    data['first_name'],
+                    data['last_name'],
+                    data['phone'],
+                    data.get('email') or None,
+                    data.get('date_of_birth') or None,
+                    data.get('allergies') or None,
+                    data.get('preferred_color') or None,
+                    data.get('loyalty_points') or 0,
+                    data.get('is_active') or 1,
+                    customer_id
+                ]
+            )
+
+        # 2) Sync / create the auth user if requested
+        new_username = (data.get('username') or '').strip()
+        new_password = (data.get('password') or '').strip()
+
+        # Refresh cust fields for syncing with auth_user
+        first_name = data['first_name']
+        last_name  = data['last_name']
+        email      = data.get('email') or ''
+
+        try:
+            if cust['user_id']:
+                # Linked user exists — update if username provided or password provided
+                user = User.objects.get(pk=cust['user_id'])
+
+                if new_username:
+                    user.username = new_username  # may raise IntegrityError on duplicate
+                # Always keep names/email in sync with CUSTOMER edits
+                user.first_name = first_name
+                user.last_name  = last_name
+                user.email      = email
+
+                if new_password:
+                    user.set_password(new_password)
+
+                user.save()
+
+            else:
+                # No linked user — if both username and password provided, create and link
+                if new_username and new_password:
+                    user = User.objects.create_user(
+                        username=new_username,
+                        password=new_password,
+                        first_name=first_name,
+                        last_name=last_name,
+                        email=email
+                    )
+                    # Link this new user to the customer
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            "UPDATE customer SET user_id = %s WHERE customer_id = %s",
+                            [user.id, customer_id]
+                        )
+                # If only one of username/password is provided, ignore creating user (silent)
+                # You can show an error if you prefer requiring both.
+
+        except IntegrityError:
+            # Username already taken (or other unique violation)
+            # Re-render form with error and current user-entered fields
+            cust.update({
+                'first_name': first_name,
+                'last_name': last_name,
+                'phone': data['phone'],
+                'email': email,
+                'date_of_birth': data.get('date_of_birth') or '',
+                'allergies': data.get('allergies') or '',
+                'preferred_color': data.get('preferred_color') or '',
+                'loyalty_points': data.get('loyalty_points') or 0,
+                'is_active': bool(int(data.get('is_active') or 1)),
+                'username': new_username,
+            })
+            return render(request, 'customers/customer_edit.html', {
+                'customer': cust,
+                'error': 'That username is already taken. Please choose a different one.',
+            })
+
+        return redirect('customer_list')
+
+    # GET
+    return render(request, 'customers/customer_edit.html', {'customer': cust})
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM customer WHERE customer_id=%s", [customer_id])
         row = cursor.fetchone()

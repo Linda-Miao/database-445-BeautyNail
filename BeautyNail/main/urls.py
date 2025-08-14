@@ -58,10 +58,12 @@ urlpatterns = [
 
     # Review paths
     path('reviews/', views_review.reviews_list, name='reviews_list'),
-    path('reviews/add/', views_review.review_add, name='review_add'),
-    path('reviews/<int:review_id>/edit/', views_review.review_edit, name='review_edit'),
+    # path('reviews/add/', views_review.review_add, name='review_add'),
+    # path('reviews/<int:review_id>/edit/', views_review.review_edit, name='review_edit'),
     path('reviews/<int:review_id>/delete/', views_review.review_delete, name='review_delete'),
     # NEW (customer review add/edit)
     path('my_reviews/<int:appointment_id>/review/add/', views_my_appointment.my_review_add, name='my_review_add'),
     path('my_reviews/<int:review_id>/edit/', views_my_appointment.my_review_edit, name='my_review_edit'),
+    path('my_reviews/<int:review_id>/delete/', views_review.my_review_delete, name='my_review_delete'),
+
 ]

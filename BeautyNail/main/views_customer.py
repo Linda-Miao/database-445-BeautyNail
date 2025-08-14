@@ -120,9 +120,9 @@ def get_customers_by_search(query):
 def get_top_customers():
     sql = """
         SELECT c.customer_id, c.first_name, c.last_name, SUM(p.amount + p.tip_amount) AS total_payment
-        FROM customer as c
-        JOIN appointment as a ON c.customer_id = a.customer_id
-        JOIN payment as p ON a.appointment_id = p.appointment_id
+        FROM customer as c, appointment as a, payment as p
+        WHERE c.customer_id = a.customer_id
+        AND a.appointment_id = p.appointment_id
         GROUP BY c.customer_id, c.first_name, c.last_name
         HAVING SUM(p.amount + p.tip_amount) = (
             SELECT MAX(total_amount) FROM (

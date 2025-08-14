@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from .models import Customer,Review,Staff
 from django.db import connection
 from django.contrib.auth.models import User
-# Create your views here.
+
 
 # Django support insert, edit, delete using ORM so we only implement the insert, edit, delete function using raw query only for customer table
 def customer_add(request):
@@ -143,10 +143,10 @@ def get_negative_reviewers():
                c.customer_id, c.first_name, c.last_name, c.phone, c.email, c.loyalty_points,
                r.appointment_id,
                s.first_name AS staff_first_name, s.last_name AS staff_last_name
-        FROM review AS r
-        JOIN customer AS c ON r.customer_id = c.customer_id
-        JOIN staff AS s ON r.staff_id = s.staff_id
-        WHERE r.rating < 3
+        FROM review AS r, customer AS c, staff AS s
+        WHERE  r.customer_id = c.customer_id
+        AND  r.staff_id = s.staff_id
+        AND r.rating < 3
         ORDER BY r.rating ASC
     """
     return Customer.objects.raw(sql)

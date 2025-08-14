@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.contrib.auth.decorators import login_required
-from .models import Appointment, Customer
+from .models import Appointment, Customer, Review
 from .views_appointment import (
     _staff_options,
     _service_options,
@@ -14,30 +14,113 @@ from .views_appointment import (
     _norm_hms_str,
 )
 
-# -------- My Appointments List --------
+#-------- My Appointments List --------
+# def get_my_appointments_by_search(customer_id, query):
+#     sql = """
+#         SELECT
+#             a.appointment_id,                 -- PK for .raw()
+#             a.appointment_id AS id,           -- for template
+#             a.appointment_date AS date,
+#             a.start_time       AS start,
+#             a.end_time         AS end,
+#             a.status,
+#             a.total_amount     AS total,
+#             CONCAT(s.first_name, ' ', s.last_name) AS staff_name
+#         FROM appointment a, staff s
+#         WHERE a.staff_id = s.staff_id
+#           AND a.customer_id = %s
+#     """
+#     params = [customer_id]
+
+#     if query:
+#         sql += """
+#           AND (
+#                 s.first_name LIKE %s OR s.last_name LIKE %s OR
+#                 a.status LIKE %s OR
+#                 DATE_FORMAT(a.appointment_date,'%%Y-%%m-%%d') = %s OR
+#                 CAST(a.appointment_id AS CHAR) = %s
+#           )
+#         """
+#         like = f"%{query}%"
+#         params += [like, like, like, query, query]
+
+#     sql += " ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC "
+#     return Appointment.objects.raw(sql, params)
+
+def get_my_appointments_by_search(customer_id, query):
+    sql = """
+        SELECT
+            a.appointment_id,                 -- PK for .raw()
+            a.appointment_id AS id,
+            a.appointment_date AS date,
+            a.start_time       AS start,
+            a.end_time         AS end,
+            a.status,
+            a.total_amount     AS total,
+            CONCAT(s.first_name, ' ', s.last_name) AS staff_name,
+            r.review_id AS review_id          -- NULL if no review
+        FROM appointment a
+        JOIN staff s
+          ON a.staff_id = s.staff_id
+        LEFT JOIN review r
+          ON r.appointment_id = a.appointment_id
+         AND r.customer_id    = %s
+        WHERE a.customer_id = %s
+    """
+    params = [customer_id, customer_id]
+
+    if query:
+        sql += """
+          AND (
+                s.first_name LIKE %s OR s.last_name LIKE %s OR
+                a.status LIKE %s OR
+                DATE_FORMAT(a.appointment_date,'%%Y-%%m-%%d') = %s OR
+                CAST(a.appointment_id AS CHAR) = %s
+          )
+        """
+        like = f"%{query}%"
+        params += [like, like, like, query, query]
+
+    sql += " ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC "
+    return Appointment.objects.raw(sql, params)
+
 @login_required
 def my_appointment_list(request):
-    # Find the logged-in user's customer_id
-    customer = get_object_or_404(Customer, user_id=request.user.id)
+    
+    user_id = request.user.id if hasattr(request.user, "id") else request.user
+    customer = get_object_or_404(Customer, user_id=user_id)
 
-    with connection.cursor() as c:
-        c.execute("""
-            SELECT a.appointment_id, a.appointment_date, a.start_time, a.end_time,
-                   a.status, a.total_amount,
-                   CONCAT(s.first_name,' ',s.last_name) AS staff_name
-            FROM APPOINTMENT a, STAFF s  
-            WHERE a.staff_id = s.staff_id 
-            AND a.customer_id = %s 
-            ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC
-        """, [customer.customer_id])
-        rows = c.fetchall()
+    query = (request.GET.get("search") or "").strip()
+    appointments = get_my_appointments_by_search(customer.customer_id, query)
 
-    appts = [{
-        'id': r[0], 'date': r[1], 'start': r[2], 'end': r[3],
-        'status': r[4], 'total': r[5], 'staff': r[6]
-    } for r in rows]
+    return render(request, "appointments/my_appointments.html", {
+        "appointments": appointments,
+        "search_query": query,
+    })
 
-    return render(request, 'appointments/my_appointments.html', {'appointments': appts})
+# @login_required
+# def my_appointment_list(request):
+#     # Find the logged-in user's customer_id
+#     customer = get_object_or_404(Customer, user_id=request.user.id)
+
+#     with connection.cursor() as c:
+#         c.execute("""
+#             SELECT a.appointment_id, a.appointment_date, a.start_time, a.end_time,
+#                    a.status, a.total_amount,
+#                    CONCAT(s.first_name,' ',s.last_name) AS staff_name
+#             FROM APPOINTMENT a, STAFF s  
+#             WHERE a.staff_id = s.staff_id 
+#             AND a.customer_id = %s 
+#             ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC
+#         """, [customer.customer_id])
+#         rows = c.fetchall()
+
+#     appts = [{
+#         'id': r[0], 'date': r[1], 'start': r[2], 'end': r[3],
+#         'status': r[4], 'total': r[5], 'staff': r[6]
+#     } for r in rows]
+
+#     return render(request, 'appointments/my_appointments.html', {'appointments': appts})
 
 
 # -------- Add My Appointment --------
@@ -204,3 +287,87 @@ def my_appointment_edit(request, appointment_id):
         'time_slots': time_slots,
         'selected_time': selected_time,  # exact HH:MM:SS or ''
     })
+
+# review section
+@login_required
+def my_review_add(request, appointment_id):
+    # Ensure this appointment belongs to the logged-in customer and is completed
+    customer = get_object_or_404(Customer, user_id=request.user.id)
+    appt = get_object_or_404(Appointment, pk=appointment_id, customer_id=customer.customer_id)
+
+    if (appt.status or '').lower() != 'completed':
+        messages.error(request, 'You can only review completed appointments.')
+        return redirect('my_appointments')
+
+    # If a review already exists, go to edit
+    existing = Review.objects.filter(customer_id=customer.customer_id, appointment_id=appt.appointment_id).first()
+    if existing:
+        return redirect('my_review_edit', review_id=existing.review_id)
+
+    # Display staff name (optional)
+    with connection.cursor() as c:
+        c.execute("SELECT CONCAT(first_name,' ',last_name) FROM STAFF WHERE staff_id = %s", [appt.staff_id])
+        row = c.fetchone()
+    staff_name = row[0] if row else "-"
+
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        comment = (request.POST.get('comment') or '').strip() or None
+
+        try:
+            rating_int = int(rating)
+            if rating_int < 1 or rating_int > 5:
+                raise ValueError()
+        except Exception:
+            messages.error(request, 'Please choose a rating between 1 and 5.')
+            return render(request, 'reviews/my_review_add.html', {
+                'appt': appt,
+                'staff_name': staff_name,
+            })
+
+        Review.objects.create(
+            customer_id=customer.customer_id,
+            appointment_id=appt.appointment_id,
+            staff_id=appt.staff_id,
+            rating=rating_int,
+            comment=comment,
+            review_date=timezone.now(),
+        )
+        messages.success(request, 'Review submitted. Thank you!')
+        return redirect('my_appointments')
+
+    return render(request, 'reviews/my_review_add.html', {
+        'appt': appt,
+        'staff_name': staff_name,
+    })
+
+
+@login_required
+def my_review_edit(request, review_id):
+    customer = get_object_or_404(Customer, user_id=request.user.id)
+    item = get_object_or_404(Review, pk=review_id, customer_id=customer.customer_id)
+
+    # Optional: verify the appointment is still completed
+    appt = get_object_or_404(Appointment, pk=item.appointment_id, customer_id=customer.customer_id)
+
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        comment = (request.POST.get('comment') or '').strip() or None
+
+        try:
+            rating_int = int(rating)
+            if rating_int < 1 or rating_int > 5:
+                raise ValueError()
+        except Exception:
+            messages.error(request, 'Please choose a rating between 1 and 5.')
+            return render(request, 'reviews/my_review_edit.html', {'item': item, 'appt': appt})
+
+        item.rating = rating_int
+        item.comment = comment
+        item.review_date = timezone.now()
+        item.save()
+
+        messages.success(request, 'Review updated.')
+        return redirect('my_appointments')
+
+    return render(request, 'reviews/my_review_edit.html', {'item': item, 'appt': appt})

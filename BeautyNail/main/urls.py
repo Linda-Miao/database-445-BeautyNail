@@ -1,5 +1,7 @@
 from django.urls import path
-from . import views, views_customer, views_staff, views_event, views_inventory, views_service, views_appointment, views_my_appointment, views_guest_appointment
+from . import (views, views_customer, views_staff, views_event, views_inventory, 
+               views_service, views_appointment, views_my_appointment, views_payment, 
+               views_guest_appointment, views_review)
 
 urlpatterns = [
     path('', views.views_main, name='main'),
@@ -42,8 +44,24 @@ urlpatterns = [
     path('appointments/add/', views_appointment.appointment_add, name='appointment_add'),
     path('appointments/<int:appointment_id>/edit/', views_appointment.appointment_edit, name='appointment_edit'),
     path('appointments/<int:appointment_id>/delete/', views_appointment.appointment_delete, name='appointment_delete'),
+    path('<int:appointment_id>/finish/', views_appointment.appointment_finish, name='appointment_finish'),
     path('my_appointments/', views_my_appointment.my_appointment_list, name='my_appointments'),
     path('my_appointments/add/', views_my_appointment.my_appointment_add, name='my_appointment_add'),
     path('my_appointments/<int:appointment_id>/edit/', views_my_appointment.my_appointment_edit, name='my_appointment_edit'),
     #path('guest_appointments/', views_guest_appointment.guest_appointment_add, name='guest_appointments_add'),
+
+    # payment paths
+    path('payments/', views_payment.payment_list, name='payment_list'),
+    path('payments/add/', views_payment.payment_add, name='payment_add'),
+    path('payments/<int:payment_id>/edit/', views_payment.payment_edit, name='payment_edit'),
+    path('payments/<int:payment_id>/delete/', views_payment.payment_delete, name='payment_delete'),
+
+    # Review paths
+    path('reviews/', views_review.reviews_list, name='reviews_list'),
+    path('reviews/add/', views_review.review_add, name='review_add'),
+    path('reviews/<int:review_id>/edit/', views_review.review_edit, name='review_edit'),
+    path('reviews/<int:review_id>/delete/', views_review.review_delete, name='review_delete'),
+    # NEW (customer review add/edit)
+    path('my_reviews/<int:appointment_id>/review/add/', views_my_appointment.my_review_add, name='my_review_add'),
+    path('my_reviews/<int:review_id>/edit/', views_my_appointment.my_review_edit, name='my_review_edit'),
 ]

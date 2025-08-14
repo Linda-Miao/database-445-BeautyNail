@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Finish Appointment | BeautyNailNet{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh">
+  <div>
+    <h2 class="text-center mb-4">Finish Appointment → Add Payment</h2>
+
+    <table class="mb-3">
+      <tr>
+        <td><strong>Appointment ID:</strong></td>
+        <td>{{ appt.appointment_id }}</td>
+      </tr>
+      <tr>
+        <td><strong>Date / Time:</strong></td>
+        <td>{{ appt.appointment_date }} &nbsp; {{ appt.start_time|time:"g:i A" }} – {{ appt.end_time|time:"g:i A" }}</td>
+      </tr>
+      <tr>
+        <td><strong>Customer:</strong></td>
+        <td>{{ customer_name }}</td>
+      </tr>
+      <tr>
+        <td><strong>Staff:</strong></td>
+        <td>{{ staff_name }}</td>
+      </tr>
+      <tr>
+        <td><strong>Amount:</strong></td>
+        <td>{{ amount }}</td>
+      </tr>
+    </table>
+
+    <form method="post" action="{% url 'appointment_finish' appt.appointment_id %}">
+      {% csrf_token %}
+      <table>
+        <tr>
+          <td><label for="payment_method">Payment Method:</label></td>
+          <td>
+            <select id="payment_method" name="payment_method" required>
+              <option value="">-- Select Method --</option>
+              <option>cash</option>
+              <option>card</option>
+              <option>apple_pay</option>
+              <option>google_pay</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td><label for="tip_amount">Tip Amount:</label></td>
+          <td><input type="number" id="tip_amount" name="tip_amount" step="0.01"></td>
+        </tr>
+        <tr>
+          <td><label for="transaction_id">Transaction ID:</label></td>
+          <td><input type="text" id="transaction_id" name="transaction_id" placeholder="optional"></td>
+        </tr>
+      </table>
+
+      <div class="mt-3 text-center">
+        <button type="submit" class="btn btn-success">Submit Payment</button>
+        <a href="{% url 'appointment_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

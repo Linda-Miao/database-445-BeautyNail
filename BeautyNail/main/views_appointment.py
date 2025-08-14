@@ -5,9 +5,12 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required  # optional; use if you want auth
 from datetime import datetime, timedelta, time 
 import re
+from decimal import Decimal
 
-from .models import Appointment  # make sure Appointment model is correct
+from .models import Appointment, Payment  #
 
+#---------- constants ----------
+STATUS_CHOICES = ["scheduled", "completed", "cancelled", "pending"]
 
 # ---------- option loaders ----------
 
@@ -44,6 +47,16 @@ def _service_options():
 
 
 # ---------- helpers (DRY) ----------
+def _calc_total_from_services(appointment_id):
+    """Fallback: sum APPOINTMENT_SERVICE.service_price if APPOINTMENT.total_amount is NULL."""
+    with connection.cursor() as c:
+        c.execute("""
+            SELECT COALESCE(SUM(service_price), 0)
+            FROM APPOINTMENT_SERVICE
+            WHERE appointment_id = %s
+        """, [appointment_id])
+        row = c.fetchone()
+    return Decimal(row[0] or 0)
 
 def _service_price_map(service_ids):
     """Return {service_id: base_price} for given ids (ints)."""
@@ -94,7 +107,7 @@ def _load_appointment_service_rows(appointment_id):
             SELECT aps.service_id, s.service_name, aps.service_price, aps.polish_color
             FROM APPOINTMENT_SERVICE aps, SERVICE s
             WHERE aps.service_id = s.service_id
-              AND aps.appointment_id = %s
+            AND aps.appointment_id = %s
             ORDER BY aps.appointment_service_id;
         """, [appointment_id])
         rows = c.fetchall()
@@ -145,24 +158,68 @@ ADMIN_TIME_SLOTS = [
 
 # ---------- list ----------
 
+# def appointment_list(request):
+#     with connection.cursor() as c:
+#         c.execute("""
+#             SELECT a.appointment_id, a.appointment_date, a.start_time, a.end_time,
+#                    a.status, a.total_amount,
+#                    CONCAT(c.first_name,' ',c.last_name) AS customer_name,
+#                    CONCAT(s.first_name,' ',s.last_name) AS staff_name
+#             FROM APPOINTMENT a, CUSTOMER c, STAFF s
+#             WHERE a.customer_id = c.customer_id
+#               AND a.staff_id = s.staff_id
+#             ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC
+#         """)
+#         rows = c.fetchall()
+#     appts = [{
+#         'id': r[0], 'date': r[1], 'start': r[2], 'end': r[3],
+#         'status': r[4], 'total': r[5], 'customer': r[6], 'staff': r[7]
+#     } for r in rows]
+#     return render(request, 'appointments/appointments.html', {'appointments': appts})
+
+def get_appointments_by_search(query):
+    sql = """
+        SELECT
+            a.appointment_id,                 
+            a.appointment_id AS id,           
+            a.appointment_date AS date,       
+            a.start_time       AS start,     
+            a.end_time         AS end,        
+            a.status,
+            a.total_amount     AS total,      
+            CONCAT(c.first_name, ' ', c.last_name) AS customer_name, 
+            CONCAT(s.first_name, ' ', s.last_name) AS staff_name      
+        FROM appointment a, customer c, staff s
+        WHERE a.customer_id = c.customer_id
+          AND a.staff_id    = s.staff_id
+    """
+    params = []
+    if query:
+        sql += """
+          AND (
+                c.first_name LIKE %s OR c.last_name LIKE %s OR
+                s.first_name LIKE %s OR s.last_name LIKE %s OR
+                a.status LIKE %s OR
+                DATE_FORMAT(a.appointment_date,'%%Y-%%m-%%d') = %s OR
+                CAST(a.appointment_id AS CHAR) = %s
+          )
+        """
+        like = f"%{query}%"
+        params = [like, like, like, like, like, query, query]
+
+    sql += " ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC "
+    
+    return Appointment.objects.raw(sql, params)
+
+
 def appointment_list(request):
-    with connection.cursor() as c:
-        c.execute("""
-            SELECT a.appointment_id, a.appointment_date, a.start_time, a.end_time,
-                   a.status, a.total_amount,
-                   CONCAT(c.first_name,' ',c.last_name) AS customer_name,
-                   CONCAT(s.first_name,' ',s.last_name) AS staff_name
-            FROM APPOINTMENT a, CUSTOMER c, STAFF s
-            WHERE a.customer_id = c.customer_id
-              AND a.staff_id = s.staff_id
-            ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC
-        """)
-        rows = c.fetchall()
-    appts = [{
-        'id': r[0], 'date': r[1], 'start': r[2], 'end': r[3],
-        'status': r[4], 'total': r[5], 'customer': r[6], 'staff': r[7]
-    } for r in rows]
-    return render(request, 'appointments/appointments.html', {'appointments': appts})
+    query = request.GET.get('search', '').strip()
+    appointments = get_appointments_by_search(query)
+
+    return render(request, 'appointments/appointments.html', {
+        'appointments': appointments,
+        'search_query': query
+    })
 
 
 # ---------- create ----------
@@ -195,6 +252,7 @@ def appointment_add(request):
                 'staff_opts': staff_opts,
                 'cust_opts': cust_opts,
                 'svc_opts': svc_opts,
+                'status_choices': STATUS_CHOICES,
             })
 
         # auto-calc end_time if missing (+90 min)
@@ -234,6 +292,7 @@ def appointment_add(request):
         'staff_opts': staff_opts,
         'cust_opts': cust_opts,
         'svc_opts': svc_opts,
+        'status_choices': STATUS_CHOICES,
     })
 
 
@@ -287,6 +346,7 @@ def appointment_edit(request, appointment_id):
                 'current_services': current_services,
                 'time_slots': time_slots,
                 'selected_time': selected_time,
+                'status_choices': STATUS_CHOICES,
             })
 
         # Compute end_time same as user (+90 mins)
@@ -305,7 +365,7 @@ def appointment_edit(request, appointment_id):
         appt.end_time         = end_time
         appt.notes            = notes
         appt.total_amount     = total_amount
-        appt.status           = status  # keep whatever admin chooses
+        appt.status           = status  
 
         appt.save()
 
@@ -342,9 +402,79 @@ def appointment_edit(request, appointment_id):
         'current_services': current_services,
         'time_slots': time_slots,
         'selected_time': selected_time,
+        'status_choices': STATUS_CHOICES,
     })
 
 
+# ---------- finish appointment ----------
+@transaction.atomic
+def appointment_finish(request, appointment_id):
+    # Load appointment and basic context for display
+    appt = get_object_or_404(Appointment, pk=appointment_id)
+
+    # Only allow finishing scheduled appts
+    if (appt.status or '').lower() != 'scheduled':
+        messages.error(request, 'Only scheduled appointments can be finished.')
+        return redirect('appointment_list')
+
+    # Compute the base amount
+    amount = appt.total_amount
+    if amount in (None, ''):
+        amount = _calc_total_from_services(appt.appointment_id)
+
+    # Display names (read-only)
+    with connection.cursor() as c:
+        c.execute("""
+            SELECT CONCAT(c.first_name,' ',c.last_name) AS customer_name,
+                   CONCAT(s.first_name,' ',s.last_name) AS staff_name
+            FROM APPOINTMENT a
+            JOIN CUSTOMER c ON a.customer_id = c.customer_id
+            JOIN STAFF s ON a.staff_id = s.staff_id
+            WHERE a.appointment_id = %s
+        """, [appt.appointment_id])
+        row = c.fetchone()
+    customer_name = row[0] if row else '-'
+    staff_name    = row[1] if row else '-'
+
+    if request.method == 'POST':
+        payment_method = request.POST.get('payment_method', '').strip()
+        tip_amount     = request.POST.get('tip_amount') or 0
+        transaction_id = request.POST.get('transaction_id', '').strip() or None
+
+        # Basic validation
+        if not payment_method:
+            messages.error(request, 'Please select a payment method.')
+            return render(request, 'appointments/appointment_finish.html', {
+                'appt': appt,
+                'customer_name': customer_name,
+                'staff_name': staff_name,
+                'amount': amount,
+            })
+
+        # Create payment (ORM)
+        Payment.objects.create(
+            appointment_id=appt.appointment_id,
+            payment_method=payment_method,
+            amount=amount,
+            tip_amount=tip_amount,
+            transaction_id=transaction_id,
+            payment_date=timezone.now(),
+        )
+
+        # Mark appointment completed
+        appt.status = 'completed'
+        appt.save(update_fields=['status'])
+
+        messages.success(request, 'Appointment finished and payment recorded.')
+        return redirect('appointment_list')
+
+    # GET — show prefilled payment form
+    return render(request, 'appointments/appointment_finish.html', {
+        'appt': appt,
+        'customer_name': customer_name,
+        'staff_name': staff_name,
+        'amount': amount,
+    })
 
 # ---------- delete ----------
 

@@ -64,10 +64,9 @@
           <td><label for="status">Status:</label></td>
           <td>
             <select id="status" name="status">
-              <option value="scheduled" selected>scheduled</option>
-              <option value="completed">completed</option>
-              <option value="cancelled">cancelled</option>
-              <option value="pending">pending</option>
+              {% for s in status_choices %}
+                <option value="{{ s }}" {% if s == "scheduled" %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
             </select>
           </td>
         </tr>

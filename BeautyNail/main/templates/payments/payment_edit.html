@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Edit Payment | BeautyNailNet{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh">
+  <div>
+    <h2 class="text-center mb-4">Edit Payment</h2>
+    <form method="post" action="{% url 'payment_edit' item.payment_id %}">
+      {% csrf_token %}
+      <table>
+        <tr>
+          <td><label for="appointment_id">Appointment ID:</label></td>
+          <td><input type="number" id="appointment_id" name="appointment_id" value="{{ item.appointment_id }}" required></td>
+        </tr>
+        <tr>
+          <td><label for="payment_method">Payment Method:</label></td>
+          <td>
+            <select id="payment_method" name="payment_method" required>
+              <option value="">-- Select Method --</option>
+              <option value="cash" {% if item.payment_method == 'cash' %}selected{% endif %}>cash</option>
+              <option value="card" {% if item.payment_method == 'card' %}selected{% endif %}>card</option>
+              <option value="apple_pay" {% if item.payment_method == 'apple_pay' %}selected{% endif %}>apple_pay</option>
+              <option value="google_pay" {% if item.payment_method == 'google_pay' %}selected{% endif %}>google_pay</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td><label for="amount">Amount:</label></td>
+          <td><input type="number" id="amount" name="amount" step="0.01" value="{{ item.amount }}" required></td>
+        </tr>
+        <tr>
+          <td><label for="tip_amount">Tip Amount:</label></td>
+          <td><input type="number" id="tip_amount" name="tip_amount" step="0.01" value="{{ item.tip_amount }}"></td>
+        </tr>
+        <tr>
+          <td><label for="transaction_id">Transaction ID:</label></td>
+          <td><input type="text" id="transaction_id" name="transaction_id" value="{{ item.transaction_id|default:'' }}"></td>
+        </tr>
+      </table>
+      <div class="mt-3 text-center">
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a href="{% url 'payment_list' %}" class="btn btn-secondary ms-2">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

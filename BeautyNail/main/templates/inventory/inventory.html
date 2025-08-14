@@ -47,7 +47,7 @@
           <td>{{ it.reorder_level|default:"-" }}</td>
           <td>{{ it.supplier_name|default:"-" }}</td>
           <td>{{ it.last_updated|date:"Y-m-d H:i" }}</td>
-          <td>
+          <td class="actions-cell">
             <a href="{% url 'inventory_edit' it.inventory_id %}" class="btn btn-primary btn-sm">Edit</a>
             <form method="post" action="{% url 'inventory_delete' it.inventory_id %}" style="display:inline;">
               {% csrf_token %}

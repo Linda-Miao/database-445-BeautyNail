@@ -44,7 +44,7 @@
               -
             {% endif %}
           </td>
-          <td>
+          <td class="actions-cell">
             <a href="{% url 'event_edit' e.events_id %}" class="btn btn-primary btn-sm">Edit</a>
             <form method="post" action="{% url 'event_delete' e.events_id %}" style="display:inline;">
               {% csrf_token %}

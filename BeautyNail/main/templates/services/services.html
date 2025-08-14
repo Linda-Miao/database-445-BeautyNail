@@ -39,7 +39,7 @@
           <td>{{ s.duration_minutes }}</td>
           <td>{{ s.category }}</td>
           <td>{{ s.requies_appointment|yesno:"Yes,No" }}</td>
-          <td>
+          <td class="actions-cell">
             <a href="{% url 'service_edit' s.service_id %}" class="btn btn-primary btn-sm">Edit</a>
             <form method="post" action="{% url 'service_delete' s.service_id %}" style="display:inline;">
               {% csrf_token %}

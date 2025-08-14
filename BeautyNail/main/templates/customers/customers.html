@@ -30,6 +30,7 @@
                     {% elif request.GET.top_customer %}
                         <th class="table-warning">Total payment</th>
                     {% endif %}
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -56,7 +57,7 @@
                     {% if request.GET.top_customer %}
                         <td class="table-warning fw-bold">{{ customer.total_payment }}</td>
                     {% endif %}
-                    <td>
+                    <td class="actions-cell">
                         <a href="{% url 'customer_edit' customer.customer_id %}" class="btn btn-primary btn-sm">Edit</a>
                         <form method="post" action="{% url 'customer_delete' customer.customer_id %}" style="display:inline;">
                             {% csrf_token %}

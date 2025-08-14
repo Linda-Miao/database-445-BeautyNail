@@ -29,7 +29,7 @@
           <td>{{ appt.staff }}</td>
           <td>{{ appt.status }}</td>
           <td>{{ appt.total|default:"-" }}</td>
-          <td>
+          <td class="actions-cell">
             <a href="{% url 'appointment_edit' appt.id %}" class="btn btn-primary btn-sm">Edit</a>
             <form method="post" action="{% url 'appointment_delete' appt.id %}" style="display:inline;">
               {% csrf_token %}

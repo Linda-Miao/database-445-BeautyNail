@@ -31,7 +31,7 @@
                 {% endif %}
             </td>
             <td>{{ appt.staff }}</td>
-            <td>
+            <td class="actions-cell">
                 {% if appt.status in "pending,scheduled" %}
                     <a href="{% url 'my_appointment_edit' appt.id %}" class="btn btn-sm btn-warning">Edit</a>
                 {% else %}

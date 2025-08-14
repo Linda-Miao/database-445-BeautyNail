@@ -19,17 +19,23 @@
         padding: 3rem;
         text-align: center;
       }
+
       .header h1 { font-size: 3rem; margin: 0; }
       .header .tagline { font-size: 1.3rem; font-style: italic; opacity: 0.9; margin-top: 0.5rem; }
 
       /* ===== Keep old nav styles (dynamic Django nav below) ===== */
       .nav-link { color: #e91e63 !important; font-weight: bold; }
+      .nav-link.active {background-color: #f0d374ff; color: #e91e63 !important;border-radius: 4px;}
 
       /* ===== Buttons ===== */
       .btn-pink { background:#e91e63; color:#fff; }
       .btn-pink:hover { background:#c2185b; color:#fff; }
       .btn-outline-pink { border:1px solid #e91e63; color:#e91e63; }
       .btn-outline-pink:hover { background:#e91e63; color:#fff; }
+
+      td.actions-cell {white-space: nowrap;}
+      td.actions-cell .btn {display: inline-block; margin-right: 0.25rem; /* small gap between buttons */
+      vertical-align: middle}
 
       /* ===== Flatpickr tweaks ===== */
       .flatpickr-calendar .flatpickr-prev-month svg,
@@ -80,13 +86,14 @@
       .feature-description { color: #666; text-align: center; line-height: 1.6; }
 
       /* Footer Styles */
-      .footer { background: #2c2c2c; color: white; padding: 1.5rem 0; margin-top: 2rem; }
-      .footer-content { max-width: 1200px; margin: 0 auto; padding: 0 2rem; text-align: center; }
-      .social-icons { display: flex; justify-content: center; gap: 1rem; margin: 1rem 0; }
-      .social-icon { background: #e91e63; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1.2rem; }
-      .footer-subscribe { display: flex; justify-content: center; gap: 0; max-width: 400px; margin: 1.2rem auto; }
-      .footer-subscribe input { flex: 1; padding: 0.6rem; border: none; border-radius: 0; font-size: 1rem; }
-      .footer-subscribe button { background: #e91e63; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 0; font-size: 1rem; cursor: pointer; }
+      .footer { background: #2c2c2c; color: white; padding: 0.8rem 0; margin-top: 1rem; }
+      .footer-content { max-width: 1200px; margin: 0 auto; padding: 0 1rem; text-align: center; }
+      .social-icons { display: flex; justify-content: center; gap: 0.5rem; margin: 0.6rem 0; }
+      .social-icon { background: #e91e63; color: white; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1rem; }
+      .footer-subscribe { display: flex; justify-content: center; max-width: 350px; margin: 0.8rem auto; }
+      .footer-subscribe input { flex: 1; padding: 0.4rem; font-size: 0.9rem; }
+      .footer-subscribe button { background: #e91e63; color: white; border: none; padding: 0.4rem 1rem; font-size: 0.9rem; }
+      .footer-content p { margin: 0.3rem 0; }
 
     </style>
 
@@ -94,33 +101,34 @@
     {% block extra_head %}{% endblock %}
   </head>
 
-  <body>
+  <body class="page-wrapper d-flex flex-column min-vh-100">
     <!-- New Header -->
     <header class="header">
       <h1>💅 BeautyNailNet Database Project</h1>
       <p class="tagline">Comprehensive Database Application for Nail Salon Management</p>
     </header>
 
-    <!-- Keep the old dynamic navigation -->
     <nav class="nav mb-4 d-flex">
       <div class="d-flex">
-        <a class="nav-link" href="/">Home</a>
-        {% if user.is_authenticated %}
-          {% if user.is_superuser %}
-            <a class="nav-link" href="/staffs/">Staff</a>
-            <a class="nav-link" href="/customers/">Customers</a>
-            <a class="nav-link" href="/reviews/">Reviews</a>
-            <a class="nav-link" href="/appointments/">Appointments</a>
-            <a class="nav-link" href="/services/">Services</a>
-            <a class="nav-link" href="/payments/">Payments</a>
-            <a class="nav-link" href="/inventory/">Inventory</a>
-            <a class="nav-link" href="/events/">Events</a>
-          {% else %}
-            <a class="nav-link" href="/my_appointments/">My Appointments</a>
-          {% endif %}
-        {% endif %}
+
+<a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
+
+{% if user.is_authenticated %}
+  {% if user.is_superuser %}
+    <a class="nav-link {% if '/staffs/' in request.path %}active{% endif %}" href="/staffs/">Staff</a>
+    <a class="nav-link {% if '/customers/' in request.path %}active{% endif %}" href="/customers/">Customers</a>
+    <a class="nav-link {% if '/reviews/' in request.path %}active{% endif %}" href="/reviews/">Reviews</a>
+    <a class="nav-link {% if '/appointments/' in request.path %}active{% endif %}" href="/appointments/">Appointments</a>
+    <a class="nav-link {% if '/services/' in request.path %}active{% endif %}" href="/services/">Services</a>
+    <a class="nav-link {% if '/payments/' in request.path %}active{% endif %}" href="/payments/">Payments</a>
+    <a class="nav-link {% if '/inventory/' in request.path %}active{% endif %}" href="/inventory/">Inventory</a>
+    <a class="nav-link {% if '/events/' in request.path %}active{% endif %}" href="/events/">Events</a>
+  {% else %}
+    <a class="nav-link {% if '/my_appointments/' in request.path %}active{% endif %}" href="/my_appointments/">My Appointments</a>
+  {% endif %}
+{% endif %}
       </div>
-      <div class="ms-auto d-flex align-items-center">
+      <div class="ms-auto d-flex align-items-center pe-3">
         {% if user.is_authenticated %}
           <span class="me-2 fw-bold">{{ user.first_name }} {{ user.last_name }}</span>
           <span class="me-2">|</span>
@@ -132,7 +140,7 @@
     </nav>
 
     <!-- Content -->
-    <main class="container flex-grow-1 mb-5">
+    <main class="container flex-grow-1 mb-5 flex-fill">
       {% block content %}{% endblock %}
     </main>
 

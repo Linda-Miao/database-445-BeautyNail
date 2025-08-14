@@ -1,8 +1,9 @@
 -- SQL Script 
 /*  ********************************  
-    Project Phase II  
+    Project Phase III  
     Team 7: Bao Thinh Diep & Linda Miao   
-    This SQL Script was tested on MySQLWorkbench  
+    This SQL Script was tested on MySQLWorkbench
+    Run this first, then in CMD window run python manage.py migrate  
     ********************************  
 */  
 
@@ -34,13 +35,8 @@ CREATE TABLE IF NOT EXISTS `CUSTOMER` (
   `is_active` tinyint(1) DEFAULT '1',
   `user_id` int DEFAULT NULL,
   PRIMARY KEY (`customer_id`),
-  UNIQUE KEY `email` (`email`),
-  KEY `idx_customer_user_id` (`user_id`),
-  CONSTRAINT `fk_customer_user`
-    FOREIGN KEY (`user_id`) REFERENCES `auth_user` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  UNIQUE KEY `email` (`email`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   AUTO_INCREMENT = 21;
 
 

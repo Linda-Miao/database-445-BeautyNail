@@ -239,59 +239,87 @@ def appointment_add(request):
 
 # ---------- edit ----------
 
+from datetime import datetime, timedelta
+from django.db import transaction, connection
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+
 @transaction.atomic
 def appointment_edit(request, appointment_id):
     appt = get_object_or_404(Appointment, pk=appointment_id)
+
     staff_opts = _staff_options()
-    cust_opts = _customer_options()
-    svc_opts = _service_options()
+    cust_opts  = _customer_options()
+    svc_opts   = _service_options()
+
+    # Same time slots as user flow
+    time_slots = [
+        ("09:00:00", "9:00 AM"),
+        ("10:30:00", "10:30 AM"),
+        ("12:00:00", "12:00 PM"),
+        ("13:30:00", "1:30 PM"),
+        ("15:00:00", "3:00 PM"),
+        ("18:30:00", "6:30 PM"),
+    ]
 
     if request.method == 'POST':
-        appt.customer_id = request.POST.get('customer_id')
-        appt.staff_id = request.POST.get('staff_id')
-        appt.appointment_date = (request.POST.get('appointment_date') or '').strip()
-        appt.start_time = _norm_hms_str((request.POST.get('start_time') or '').strip())
-        # keep provided end_time or leave as-is if you want; here we respect posted value
-        appt.end_time = (request.POST.get('end_time') or '').strip() or None
-        appt.status = (request.POST.get('status') or 'scheduled').strip() or 'scheduled'
-        appt.notes = request.POST.get('notes', '').strip() or None
+        appt.customer_id      = request.POST.get('customer_id')
+        appt.staff_id         = request.POST.get('staff_id')
+        appointment_date      = (request.POST.get('appointment_date') or '').strip()
+        start_time            = _norm_hms_str((request.POST.get('start_time') or '').strip())
+        notes                 = request.POST.get('notes', '').strip() or None
+        status                = (request.POST.get('status') or appt.status).strip()
 
-        raw_service_ids = request.POST.getlist('service_ids[]')
-        raw_colors = request.POST.getlist('polish_colors[]')
-        service_ids, colors = _normalize_services(raw_service_ids, raw_colors)
-        price_map, total_amount = _services_prices_and_total(service_ids)
-        appt.total_amount = total_amount
-
-        # validate date + time (hidden fields from grid)
-        if not appt.appointment_date or not appt.start_time:
+        # Require date + time
+        if not appointment_date or not start_time:
             messages.error(request, "Please pick a date and a time.")
-            status_choices = ["scheduled", "completed", "cancelled", "pending"]
             current_services = _load_appointment_service_rows(appt.appointment_id)
-            # Recompute selected_time to keep highlight
-            selected_time = _norm_hms_str(appt.start_time)
-            slot_values = [t for t, _ in ADMIN_TIME_SLOTS]
-            if selected_time not in slot_values:
-                selected_time = ""
+
+            # Keep grid highlight
+            slot_values   = [t for (t, _) in time_slots]
+            selected_time = start_time if start_time in slot_values else ""
+
             return render(request, 'appointments/appointment_edit.html', {
                 'appt': appt,
                 'staff_opts': staff_opts,
                 'cust_opts': cust_opts,
                 'svc_opts': svc_opts,
-                'status_choices': status_choices,
                 'current_services': current_services,
-                'time_slots': ADMIN_TIME_SLOTS,
+                'time_slots': time_slots,
                 'selected_time': selected_time,
             })
 
+        # Compute end_time same as user (+90 mins)
+        start_dt  = datetime.strptime(f"{appointment_date} {start_time}", "%Y-%m-%d %H:%M:%S")
+        end_time  = (start_dt + timedelta(minutes=90)).strftime("%H:%M:%S")
+
+        # Services + total
+        raw_service_ids = request.POST.getlist('service_ids[]')
+        raw_colors      = request.POST.getlist('polish_colors[]')
+        service_ids, colors = _normalize_services(raw_service_ids, raw_colors)
+        price_map, total_amount = _services_prices_and_total(service_ids)
+
+        # Apply updates
+        appt.appointment_date = appointment_date
+        appt.start_time       = start_time
+        appt.end_time         = end_time
+        appt.notes            = notes
+        appt.total_amount     = total_amount
+        appt.status           = status  # keep whatever admin chooses
+
         appt.save()
 
+        # Replace APPOINTMENT_SERVICE rows
         with connection.cursor() as c:
-            c.execute("DELETE FROM APPOINTMENT_SERVICE WHERE appointment_id = %s", [appt.appointment_id])
+            c.execute(
+                "DELETE FROM APPOINTMENT_SERVICE WHERE appointment_id = %s",
+                [appt.appointment_id]
+            )
             for idx, sid in enumerate(service_ids):
                 c.execute(
                     """
                     INSERT INTO APPOINTMENT_SERVICE
-                        (appointment_id, service_id, service_price, polish_color)
+                      (appointment_id, service_id, service_price, polish_color)
                     VALUES (%s, %s, %s, %s)
                     """,
                     [appt.appointment_id, sid, price_map.get(sid, 0), colors[idx]]
@@ -300,26 +328,22 @@ def appointment_edit(request, appointment_id):
         messages.success(request, 'Appointment updated.')
         return redirect('appointment_list')
 
-    # GET
-    status_choices = ["scheduled", "completed", "cancelled", "pending"]
+    # GET — preselect like user page
     current_services = _load_appointment_service_rows(appt.appointment_id)
-
-    # Preselect the grid on load
-    selected_time = _norm_hms_str(appt.start_time)
-    slot_values = [t for t, _ in ADMIN_TIME_SLOTS]
-    if selected_time not in slot_values:
-        selected_time = ""
+    normalized       = _norm_hms_str(appt.start_time)
+    slot_values      = [t for (t, _) in time_slots]
+    selected_time    = normalized if normalized in slot_values else ""
 
     return render(request, 'appointments/appointment_edit.html', {
         'appt': appt,
         'staff_opts': staff_opts,
         'cust_opts': cust_opts,
         'svc_opts': svc_opts,
-        'status_choices': status_choices,
         'current_services': current_services,
-        'time_slots': ADMIN_TIME_SLOTS,
+        'time_slots': time_slots,
         'selected_time': selected_time,
     })
+
 
 
 # ---------- delete ----------

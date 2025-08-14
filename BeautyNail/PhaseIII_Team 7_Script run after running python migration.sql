@@ -1,5 +1,4 @@
 ALTER TABLE `CUSTOMER`
-  ADD COLUMN `user_id` INT NULL,
   ADD INDEX idx_customer_user_id (user_id),
   ADD CONSTRAINT fk_customer_user
     FOREIGN KEY (user_id) REFERENCES auth_user(id)

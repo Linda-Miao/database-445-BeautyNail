@@ -117,7 +117,6 @@ def my_appointment_add(request):
 
 
 # -------- Edit My Appointment --------
-# -------- Edit My Appointment --------
 @login_required
 @transaction.atomic
 def my_appointment_edit(request, appointment_id):

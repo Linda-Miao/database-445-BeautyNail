@@ -61,17 +61,26 @@
         <tr>
           <td valign="top"><label>Services:</label></td>
           <td>
-            <div id="services-list">
-              {% if current_services and current_services|length > 0 %}
-                {% for svc in current_services %}
-                <div class="service-row mb-2">
-                  <select name="service_ids[]" class="form-select d-inline-block" style="width: 320px">
-                    <option value="">-- Select Service --</option>
-                    {% for s in svc_opts %}
-                    <option value="{{ s.id }}" {% if s.id == svc.service_id %}selected{% endif %}>
-                      {{ s.name }} (${{ s.price }})
-                    </option>
-                    {% endfor %}
+           <div id="services-list">
+      {% if current_services and current_services|length > 0 %}
+        {% for svc in current_services %}
+        <div class="service-row mb-2">
+          <select name="service_ids[]"
+                  class="form-select d-inline-block service-select"
+                  style="width: 320px">
+            <option value="">-- Select Service --</option>
+            {% for s in svc_opts %}
+              {% with sid=s.id|stringformat:"s" cur=svc.service_id|stringformat:"s" %}
+              <option value="{{ s.id }}"
+                      data-duration="{{ s.dur|default:0 }}"
+                      data-price="{{ s.price }}"
+                      {% if sid == cur %}selected{% endif %}>
+                {{ s.name }} (${{ s.price }}){% if s.dur %} — {{ s.dur }} min{% endif %}
+              </option>
+              {% endwith %}
+            {% endfor %}
+            <option value="unsure">Not sure yet — I'll decide during consultation</option>
+          
                   </select>
                   <input type="text" name="polish_colors[]" class="form-control d-inline-block ms-2"
                          style="width: 180px" placeholder="Polish color (optional)"

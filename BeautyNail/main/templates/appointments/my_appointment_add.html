@@ -75,10 +75,13 @@
                 >
                   <option value="">-- Select Service --</option>
                   {% for s in svc_opts %}
-                    <option value="{{ s.id }}" {% if pre_id == s.id|stringformat:"s" %}selected{% endif %}>
-                      {{ s.name }} (${{ s.price }})
-                    </option>
-                  {% endfor %}
+    <option value="{{ s.id }}"
+            data-duration="{{ s.dur }}"
+            data-price="{{ s.price }}"
+            {% if pre_id == s.id|stringformat:"s" %}selected{% endif %}>
+      {{ s.name }} (${{ s.price }}){% if s.dur %} — {{ s.dur }} min{% endif %}
+    </option>
+  {% endfor %}
                 </select>
                 {% endwith %}
                 <input

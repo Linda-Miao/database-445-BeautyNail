@@ -11,7 +11,7 @@
 -- Database: `beautynailnet`
 --
 
-CREATE DATABASE IF NOT EXISTS beautynailnet;
+CREATE DATABASE beautynailnet;
 USE beautynailnet;
 
 
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `CUSTOMER` (
   `first_name` varchar(50) NOT NULL,
   `last_name` varchar(50) NOT NULL,
   `phone` varchar(15) NOT NULL,
-  `email` varchar(100) DEFAULT NULL,
+  `email` varchar(100) NOT NULL,
   `date_of_birth` date DEFAULT NULL,
   `allergies` text,
   `preferred_color` varchar(50) DEFAULT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `CUSTOMER` (
   `is_active` tinyint(1) DEFAULT '1',
   `user_id` int DEFAULT NULL,
   PRIMARY KEY (`customer_id`),
-  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `email` (`email`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   AUTO_INCREMENT = 21;
 

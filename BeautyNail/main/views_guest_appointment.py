@@ -1,4 +1,4 @@
-# views_guest.py (where your guest_appointment_add lives)
+# views_guest.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import connection, transaction
 from django.contrib import messages
@@ -11,7 +11,8 @@ from .views_appointment import (
     _staff_options,
     _service_options,
     _normalize_services,
-    _services_prices_and_total,
+    _services_price_amount_and_minutes,  # <-- updated helper
+    _norm_hms_str,                        # <-- normalize "9:00" => "09:00:00"
 )
 
 @transaction.atomic
@@ -25,7 +26,7 @@ def guest_appointment_add(request):
     Then redirect to a success/summary page.
     """
     staff_opts = _staff_options()
-    svc_opts = _service_options()
+    svc_opts   = _service_options()
 
     if request.method == 'POST':
         # Identity + basics
@@ -36,18 +37,19 @@ def guest_appointment_add(request):
         staff_id   = (request.POST.get('staff_id') or '').strip()
         notes      = (request.POST.get('notes') or '').strip() or None
 
-        # Date/time (from JS)
+        # Date/time (from form/JS)
         appointment_date = (request.POST.get('appointment_date') or '').strip()
-        start_time       = (request.POST.get('start_time') or '').strip()
+        start_time_raw   = (request.POST.get('start_time') or '').strip()
+        start_time       = _norm_hms_str(start_time_raw)
 
-        # Validate
+        # Validate required fields
         if not (first_name and last_name and email and phone and staff_id):
             messages.error(request, 'Please fill all required fields.')
             return render(request, 'appointments/guest_appointment_add.html', {
                 'staff_opts': staff_opts, 'svc_opts': svc_opts,
             })
         if not (appointment_date and start_time):
-            messages.error(request, 'Please pick a date and a time.')
+            messages.error(request, 'Please pick a valid date and time.')
             return render(request, 'appointments/guest_appointment_add.html', {
                 'staff_opts': staff_opts, 'svc_opts': svc_opts,
             })
@@ -66,7 +68,8 @@ def guest_appointment_add(request):
         else:
             service_ids, colors = _normalize_services(raw_service_ids, raw_colors)
 
-        price_map, total_amount = _services_prices_and_total(service_ids)
+        # Compute price + total + summed duration (minutes)
+        price_map, total_amount, total_minutes = _services_price_amount_and_minutes(service_ids)
 
         # 1) Auth user (username=email)
         user, created_user = User.objects.get_or_create(
@@ -74,7 +77,7 @@ def guest_appointment_add(request):
             defaults={'email': email, 'first_name': first_name, 'last_name': last_name}
         )
         if created_user:
-            user.set_password(phone)   # password = phone number
+            user.set_password(phone)   # password = phone number (as in your original flow)
             user.save()
 
         # 2) Customer (link to auth user)
@@ -99,9 +102,10 @@ def guest_appointment_add(request):
                 customer.last_name = last_name
             customer.save()
 
-        # 3) Appointment (+90 minutes end time)
+        # 3) Appointment — end_time from summed duration (fallback 90 mins)
         start_dt = datetime.strptime(f"{appointment_date} {start_time}", "%Y-%m-%d %H:%M:%S")
-        end_time = (start_dt + timedelta(minutes=90)).strftime("%H:%M:%S")
+        minutes  = total_minutes
+        end_time = (start_dt + timedelta(minutes=minutes)).strftime("%H:%M:%S")
 
         appt = Appointment.objects.create(
             customer_id=customer.customer_id,
@@ -158,8 +162,8 @@ def guest_appointment_success(request, appointment_id: int):
                    CONCAT(s.first_name,' ',s.last_name) AS staff_name
             FROM appointment a, customer c, staff s
             WHERE  a.customer_id = c.customer_id
-            AND  a.staff_id    = s.staff_id
-            AND  a.appointment_id = %s
+            AND    a.staff_id    = s.staff_id
+            AND    a.appointment_id = %s
             """,
             [appointment_id]
         )

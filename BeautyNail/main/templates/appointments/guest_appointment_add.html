@@ -77,14 +77,7 @@
       <form id="guest-booking-form" method="post" action="{% url 'guest_appointment_add' %}">
         {% csrf_token %}
 
-        <!-- Staff (required to satisfy DB constraint) -->
-        <select name="staff_id" class="form-select" required>
-          <option value="">Select active staff</option>
-          {% for s in staff_opts %}
-            <option value="{{ s.id }}">{{ s.name }}{% if s.specialty %} — {{ s.specialty }}{% endif %}</option>
-          {% endfor %}
-        </select>
-
+       
         <!-- Guest identity -->
         <input type="text" name="first_name" class="form-input" placeholder="First Name *" required>
         <input type="text" name="last_name"  class="form-input" placeholder="Last Name *" required>
@@ -96,17 +89,19 @@
         <div id="services-list">
           <div class="service-row">
             {% with pre_id=request.GET.prefill_service|stringformat:"s" %}
-    <select name="service_ids[]" class="form-select service-select">
-      <option value="">-- Select Service --</option>
-      {% for s in svc_opts %}
-        {# s.id is often an int; convert to string for safe comparison #}
-        <option value="{{ s.id }}" {% if pre_id == s.id|stringformat:"s" %}selected{% endif %}>
-          {{ s.name }} (${{ s.price }})
-        </option>
-      {% endfor %}
-      <option value="unsure">Not sure yet — I'll decide during consultation</option>
-    </select>
-    {% endwith %}
+<select name="service_ids[]" class="form-select service-select">
+  <option value="">-- Select Service --</option>
+  {% for s in svc_opts %}
+    <option value="{{ s.id }}"
+            data-duration="{{ s.dur }}"
+            data-price="{{ s.price }}"
+            {% if pre_id == s.id|stringformat:"s" %}selected{% endif %}>
+      {{ s.name }} (${{ s.price }}){% if s.dur %} — {{ s.dur }} min{% endif %}
+    </option>
+  {% endfor %}
+  <option value="unsure">Not sure yet — I'll decide during consultation</option>
+</select>
+{% endwith %}
 
             <input type="text" name="polish_colors[]" class="form-control service-color" placeholder="Polish color">
 
@@ -114,6 +109,14 @@
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="removeServiceRow(this)">−</button>
           </div>
         </div>
+         <!-- Staff (required to satisfy DB constraint) -->
+        <select name="staff_id" class="form-select" required>
+          <option value="">Select active staff</option>
+          {% for s in staff_opts %}
+            <option value="{{ s.id }}">{{ s.name }}{% if s.specialty %} — {{ s.specialty }}{% endif %}</option>
+          {% endfor %}
+        </select>
+
 
         <textarea name="notes" rows="3" class="form-input" placeholder="Notes (optional)"></textarea>
 
@@ -134,7 +137,9 @@
               <div><strong>Customer Phone:</strong> <span id="pPhone"></span></div>
               <div><strong>Staff:</strong> <span id="pStaff"></span></div>
               <div><strong>Date:</strong> <span id="pDate"></span></div>
-              <div><strong>Time:</strong> <span id="pTime"></span></div>
+              <div><strong>Start Time:</strong> <span id="pTime"></span></div>
+              <div><strong>Duration:</strong> <span id="pDuration"></span></div>
+              <div><strong>Ends Time:</strong> <span id="pEnd"></span></div>
               <div class="popup-services"><strong>Services:</strong>
                 <ul id="pServices" class="popup-list"></ul>
               </div>
@@ -170,6 +175,14 @@
   const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
 
   const fmtDate = iso => { if(!iso) return ''; const [y,m,d]=iso.split('-'); return `${m}/${d}/${y}`; };
+  const fmtTime = d => {                           // NEW: time formatter for end time
+    if (!(d instanceof Date) || isNaN(d)) return '—';
+    let h = d.getHours(), m = d.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    const mm = (m < 10 ? '0' : '') + m;
+    return `${h}:${mm} ${ampm}`;
+  };
   const getSelectedText = sel => (sel && sel.selectedIndex >= 0) ? sel.options[sel.selectedIndex].textContent.trim() : '';
 
   bookBtn.addEventListener('click', function(){
@@ -181,7 +194,7 @@
     const timeVal = ($('#start_time').value||'').trim();
     if(!dateVal || !timeVal){ alert('Please pick a date and a time.'); return; }
 
-    // Fill summary
+    // Fill summary basics
     $('#pName').textContent  = `${($('[name="first_name"]').value||'').trim()} ${($('[name="last_name"]').value||'').trim()}`.trim();
     $('#pEmail').textContent = ($('[name="email"]').value||'').trim();
     $('#pPhone').textContent = ($('[name="phone"]').value||'').trim();
@@ -192,6 +205,7 @@
     $('#pTime').textContent = activeTimeBtn ? activeTimeBtn.textContent.trim() : timeVal;
     $('#pNotes').textContent = ($('[name="notes"]').value||'').trim();
 
+    // List services + detect "unsure"
     const list = $('#pServices'); list.innerHTML = '';
     const rows = $$('#services-list .service-row');
     let unsure = false;
@@ -199,7 +213,7 @@
       const sel = r.querySelector('select[name="service_ids[]"]');
       const val = (sel?.value||'').trim();
       if(val === 'unsure') unsure = true;
-      if(val){
+      if(val && val !== 'unsure'){
         const label = getSelectedText(sel);
         const color = (r.querySelector('input[name="polish_colors[]"]')?.value||'').trim();
         const li = document.createElement('li');
@@ -216,6 +230,32 @@
       const li = document.createElement('li');
       li.textContent = '—';
       list.appendChild(li);
+    }
+
+    // === NEW: compute total duration and end time ===
+    let totalMinutes = 0;
+    if (!unsure) {
+      rows.forEach(r=>{
+        const sel = r.querySelector('select[name="service_ids[]"]');
+        if (!sel) return;
+        const val = (sel.value||'').trim();
+        if (!val || val === 'unsure') return;
+        const dur = parseInt(sel.selectedOptions?.[0]?.dataset?.duration || '0', 10);
+        if (!isNaN(dur) && dur > 0) totalMinutes += dur;
+      });
+    }
+    if (unsure || totalMinutes === 0) totalMinutes = 90;   // fallback default
+
+    $('#pDuration').textContent = `${totalMinutes} minutes`;
+
+    // end time from date + start + duration
+    // timeVal is "HH:MM:SS" and dateVal is "YYYY-MM-DD"
+    const start = new Date(`${dateVal}T${timeVal}`);
+    if (!isNaN(start)) {
+      const end = new Date(start.getTime() + totalMinutes * 60000);
+      $('#pEnd').textContent = fmtTime(end);
+    } else {
+      $('#pEnd').textContent = '—';
     }
 
     // Show popup

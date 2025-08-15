@@ -77,33 +77,52 @@
         </tr>
 
         <!-- Services + Notes unchanged -->
-        <tr>
-          <td valign="top"><label>Services:</label></td>
-          <td>
-            <div id="services-list">
-              {% if current_services and current_services|length > 0 %}
-                {% for row in current_services %}
-                <div class="service-row mb-2">
-                  <select name="service_ids[]" class="form-select d-inline-block" style="width: 320px;">
-                    <option value="">-- Select Service --</option>
-                    {% for s in svc_opts %}
-                    <option value="{{ s.id }}" {% if s.id == row.service_id %}selected{% endif %}>
-                      {{ s.name }} (${{ s.price }})
-                    </option>
-                    {% endfor %}
-                  </select>
-                  <input type="text" name="polish_colors[]" class="form-control d-inline-block ms-2" style="width:180px;" placeholder="Polish color (optional)" value="{{ row.color|default:'' }}">
-                  <button type="button" class="btn btn-outline-primary btn-sm ms-2" onclick="addServiceRow()">+</button>
-                  <button type="button" class="btn btn-outline-secondary btn-sm ms-1" onclick="removeServiceRow(this)">−</button>
-                </div>
-                {% endfor %}
-              {% else %}
-                <div class="service-row mb-2">
-                  <select name="service_ids[]" class="form-select d-inline-block" style="width: 320px;">
-                    <option value="">-- Select Service --</option>
-                    {% for s in svc_opts %}
-                    <option value="{{ s.id }}">{{ s.name }} (${{ s.price }})</option>
-                    {% endfor %}
+<td valign="top"><label>Services:</label></td>
+  <td>
+    <div id="services-list">
+      {% if current_services and current_services|length > 0 %}
+        {% for row in current_services %}
+        <div class="service-row mb-2">
+          <select name="service_ids[]" class="form-select d-inline-block service-select" style="width: 320px;">
+            <option value="">-- Select Service --</option>
+            {% for s in svc_opts %}
+              {% with sid=s.id|stringformat:"s" cur=row.service_id|stringformat:"s" %}
+              <option value="{{ s.id }}"
+                      data-duration="{{ s.dur|default:0 }}"
+                      data-price="{{ s.price }}"
+                      {% if sid == cur %}selected{% endif %}>
+                {{ s.name }} (${{ s.price }}){% if s.dur %} — {{ s.dur }} min{% endif %}
+              </option>
+              {% endwith %}
+            {% endfor %}
+            <option value="unsure">Not sure yet — I'll decide during consultation</option>
+          </select>
+
+          <input type="text"
+                 name="polish_colors[]"
+                 class="form-control d-inline-block ms-2 service-color"
+                 style="width:180px;"
+                 placeholder="Polish color (optional)"
+                 value="{{ row.color|default:'' }}">
+
+          <button type="button" class="btn btn-outline-primary btn-sm ms-2" onclick="addServiceRow()">+</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm ms-1" onclick="removeServiceRow(this)">−</button>
+        </div>
+        {% endfor %}
+      {% else %}
+        {# Fallback: one empty row #}
+        <div class="service-row mb-2">
+          <select name="service_ids[]" class="form-select d-inline-block service-select" style="width: 320px;">
+            <option value="">-- Select Service --</option>
+            {% for s in svc_opts %}
+              <option value="{{ s.id }}"
+                      data-duration="{{ s.dur|default:0 }}"
+                      data-price="{{ s.price }}">
+                {{ s.name }} (${{ s.price }}){% if s.dur %} — {{ s.dur }} min{% endif %}
+              </option>
+            {% endfor %}
+            <option value="unsure">Not sure yet — I'll decide during consultation</option>
+          
                   </select>
                   <input type="text" name="polish_colors[]" class="form-control d-inline-block ms-2" style="width:180px;" placeholder="Polish color (optional)">
                   <button type="button" class="btn btn-outline-primary btn-sm ms-2" onclick="addServiceRow()">+</button>

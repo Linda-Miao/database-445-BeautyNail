@@ -3,13 +3,13 @@ from django.db import connection, transaction
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required  # optional; use if you want auth
-from datetime import datetime, timedelta, time , date
+from datetime import datetime, timedelta, time, date
 import re
 from decimal import Decimal
 
-from .models import Appointment, Payment  #
+from .models import Appointment, Payment
 
-#---------- constants ----------
+# ---------- constants ----------
 STATUS_CHOICES = ["scheduled", "completed", "cancelled", "pending"]
 
 # ---------- option loaders ----------
@@ -38,15 +38,15 @@ def _customer_options():
 def _service_options():
     with connection.cursor() as c:
         c.execute("""
-            SELECT service_id, service_name, base_price
+            SELECT service_id, service_name, base_price, COALESCE(duration_minutes, 0) AS dur
             FROM SERVICE
             ORDER BY category, service_name
         """)
         rows = c.fetchall()
-    return [{'id': r[0], 'name': r[1], 'price': r[2]} for r in rows]
-
+    return [{'id': r[0], 'name': r[1], 'price': r[2], 'dur': int(r[3] or 0)} for r in rows]
 
 # ---------- helpers (DRY) ----------
+
 def _calc_total_from_services(appointment_id):
     """Fallback: sum APPOINTMENT_SERVICE.service_price if APPOINTMENT.total_amount is NULL."""
     with connection.cursor() as c:
@@ -69,6 +69,36 @@ def _service_price_map(service_ids):
         rows = c.fetchall()
     return {row[0]: row[1] for row in rows}
 
+def _service_duration_map(service_ids):
+    """Return {service_id: duration_minutes(int)} for given ids."""
+    if not service_ids:
+        return {}
+    placeholders = ",".join(["%s"] * len(service_ids))
+    sql = f"""
+        SELECT service_id, COALESCE(duration_minutes, 0)
+        FROM SERVICE
+        WHERE service_id IN ({placeholders})
+    """
+    with connection.cursor() as c:
+        c.execute(sql, service_ids)
+        rows = c.fetchall()
+    return {row[0]: int(row[1] or 0) for row in rows}
+
+def _services_price_amount_and_minutes(service_ids):
+    """
+    Given service_ids, return:
+      - price_map: {service_id -> Decimal}
+      - total_amount: Decimal | None (sum of base_price)
+      - total_minutes: int (sum of duration_minutes)
+    """
+    if not service_ids:
+        return {}, None, 0
+    price_map    = _service_price_map(service_ids)
+    duration_map = _service_duration_map(service_ids)
+    total_amount = sum(price_map.get(sid, 0) for sid in service_ids) or None
+    total_minutes = sum(int(duration_map.get(sid, 0)) for sid in service_ids)
+    return price_map, total_amount, total_minutes
+
 def _normalize_services(raw_service_ids, raw_colors):
     """
     Aligns service_ids[] and polish_colors[] by index.
@@ -85,18 +115,6 @@ def _normalize_services(raw_service_ids, raw_colors):
         colors.append((col or '').strip() or None)
     return service_ids, colors
 
-def _services_prices_and_total(service_ids):
-    """
-    Given a list of int service_ids, returns (price_map, total_amount)
-    price_map: {service_id -> Decimal}
-    total_amount: Decimal | None
-    """
-    if not service_ids:
-        return {}, None
-    price_map = _service_price_map(service_ids)
-    total_amount = sum(price_map.get(sid, 0) for sid in service_ids) or None
-    return price_map, total_amount
-
 def _load_appointment_service_rows(appointment_id):
     """
     Returns a list of dicts for existing rows to preload in edit:
@@ -107,7 +125,7 @@ def _load_appointment_service_rows(appointment_id):
             SELECT aps.service_id, s.service_name, aps.service_price, aps.polish_color
             FROM APPOINTMENT_SERVICE aps, SERVICE s
             WHERE aps.service_id = s.service_id
-            AND aps.appointment_id = %s
+              AND aps.appointment_id = %s
             ORDER BY aps.appointment_service_id;
         """, [appointment_id])
         rows = c.fetchall()
@@ -138,12 +156,11 @@ def _norm_hms_str(val: str) -> str:
         except ValueError:
             continue
 
-    # Last resort: if looks like 'HH:MM:SSxxxx', trim to first 8 with padding
+    # Last resort: if looks like 'HH:MM:SSxxxx', trim to first 8
     if re.match(r"^\d{2}:\d{2}:\d{2}", s):
         return s[:8]
 
     return ""
-
 
 # Consistent time slots used in admin edit template
 ADMIN_TIME_SLOTS = [
@@ -155,8 +172,8 @@ ADMIN_TIME_SLOTS = [
     ("18:30:00", "6:30 PM"),
 ]
 
-
 # ---------- list ----------
+
 def get_appointments_by_status(status_str):
     """
     Case-insensitive filter by status: pending/completed/scheduled/cancelled.
@@ -179,7 +196,6 @@ def get_appointments_by_status(status_str):
         ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC
     """
     return Appointment.objects.raw(sql, [status_str.strip()])
-
 
 def get_appointments_by_date(day_str):
     """
@@ -207,15 +223,15 @@ def get_appointments_by_date(day_str):
 def get_appointments_by_search(query):
     sql = """
         SELECT
-            a.appointment_id,                 
-            a.appointment_id AS id,           
-            a.appointment_date AS date,       
-            a.start_time       AS start,     
-            a.end_time         AS end,        
+            a.appointment_id,
+            a.appointment_id AS id,
+            a.appointment_date AS date,
+            a.start_time       AS start,
+            a.end_time         AS end,
             a.status,
-            a.total_amount     AS total,      
-            CONCAT(c.first_name, ' ', c.last_name) AS customer_name, 
-            CONCAT(s.first_name, ' ', s.last_name) AS staff_name      
+            a.total_amount     AS total,
+            CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+            CONCAT(s.first_name, ' ', s.last_name) AS staff_name
         FROM appointment a, customer c, staff s
         WHERE a.customer_id = c.customer_id
           AND a.staff_id    = s.staff_id
@@ -235,20 +251,18 @@ def get_appointments_by_search(query):
         params = [like, like, like, like, like, query, query]
 
     sql += " ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC "
-    
     return Appointment.objects.raw(sql, params)
-
 
 def appointment_list(request):
     query = (request.GET.get('search') or '').strip()
 
-    # date filter (existing)
+    # date filter
     filter_by_date = request.GET.get('filter_by_date')
     selected_date = request.GET.get('appt_date')
     if not selected_date:
         selected_date = date.today().isoformat()
 
-    # NEW: status filter
+    # status filter
     show_by_status = request.GET.get('show_by_status')
     selected_status = (request.GET.get('status') or '').strip()
 
@@ -263,8 +277,8 @@ def appointment_list(request):
         'appointments': appointments,
         'search_query': query,
         'selected_date': selected_date,
-        'status_choices': STATUS_CHOICES,   # pass choices to template
-        'selected_status': selected_status, # keep the selection
+        'status_choices': STATUS_CHOICES,
+        'selected_status': selected_status,
     })
 
 # ---------- create ----------
@@ -280,7 +294,7 @@ def appointment_add(request):
         staff_id = request.POST.get('staff_id')
         appointment_date = (request.POST.get('appointment_date') or '').strip()
         start_time = _norm_hms_str((request.POST.get('start_time') or '').strip())
-        # allow explicit override, else auto-calc +90m
+        # allow explicit override, else auto-calc from durations
         end_time = (request.POST.get('end_time') or '').strip() or None
         status = (request.POST.get('status') or 'scheduled').strip() or 'scheduled'
         notes = request.POST.get('notes', '').strip() or None
@@ -288,9 +302,11 @@ def appointment_add(request):
         raw_service_ids = request.POST.getlist('service_ids[]')
         raw_colors = request.POST.getlist('polish_colors[]')
         service_ids, polish_colors = _normalize_services(raw_service_ids, raw_colors)
-        price_map, total_amount = _services_prices_and_total(service_ids)
 
-        # basic validation for date & start_time (the grid fills these)
+        # prices + total + duration minutes
+        price_map, total_amount, total_minutes = _services_price_amount_and_minutes(service_ids)
+
+        # basic validation for date & start_time
         if not appointment_date or not start_time:
             messages.error(request, "Please pick a date and a time.")
             return render(request, 'appointments/appointment_add.html', {
@@ -300,10 +316,11 @@ def appointment_add(request):
                 'status_choices': STATUS_CHOICES,
             })
 
-        # auto-calc end_time if missing (+90 min)
+        # compute end_time if missing: start + sum(duration_minutes)
         if not end_time:
             start_dt = datetime.strptime(f"{appointment_date} {start_time}", "%Y-%m-%d %H:%M:%S")
-            end_time = (start_dt + timedelta(minutes=90)).strftime("%H:%M:%S")
+            minutes = total_minutes
+            end_time = (start_dt + timedelta(minutes=minutes)).strftime("%H:%M:%S")
 
         appt = Appointment.objects.create(
             customer_id=customer_id,
@@ -340,13 +357,7 @@ def appointment_add(request):
         'status_choices': STATUS_CHOICES,
     })
 
-
 # ---------- edit ----------
-
-from datetime import datetime, timedelta
-from django.db import transaction, connection
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 
 @transaction.atomic
 def appointment_edit(request, appointment_id):
@@ -394,15 +405,16 @@ def appointment_edit(request, appointment_id):
                 'status_choices': STATUS_CHOICES,
             })
 
-        # Compute end_time same as user (+90 mins)
-        start_dt  = datetime.strptime(f"{appointment_date} {start_time}", "%Y-%m-%d %H:%M:%S")
-        end_time  = (start_dt + timedelta(minutes=90)).strftime("%H:%M:%S")
-
-        # Services + total
+        # Services + totals (includes total_minutes now)
         raw_service_ids = request.POST.getlist('service_ids[]')
         raw_colors      = request.POST.getlist('polish_colors[]')
         service_ids, colors = _normalize_services(raw_service_ids, raw_colors)
-        price_map, total_amount = _services_prices_and_total(service_ids)
+        price_map, total_amount, total_minutes = _services_price_amount_and_minutes(service_ids)
+
+        # Compute end_time from start + sum(duration_minutes) 
+        start_dt  = datetime.strptime(f"{appointment_date} {start_time}", "%Y-%m-%d %H:%M:%S")
+        minutes   = total_minutes
+        end_time  = (start_dt + timedelta(minutes=minutes)).strftime("%H:%M:%S")
 
         # Apply updates
         appt.appointment_date = appointment_date
@@ -410,7 +422,7 @@ def appointment_edit(request, appointment_id):
         appt.end_time         = end_time
         appt.notes            = notes
         appt.total_amount     = total_amount
-        appt.status           = status  
+        appt.status           = status
 
         appt.save()
 
@@ -450,8 +462,8 @@ def appointment_edit(request, appointment_id):
         'status_choices': STATUS_CHOICES,
     })
 
-
 # ---------- finish appointment ----------
+
 @transaction.atomic
 def appointment_finish(request, appointment_id):
     # Load appointment and basic context for display

@@ -4,7 +4,8 @@ from . import (views, views_customer, views_staff, views_event, views_inventory,
                views_guest_appointment, views_review)
 
 urlpatterns = [
-    path('', views.views_main, name='main'),
+    path('', views.views_project_page, name='project_page'),
+    path('home/', views.home, name='home'),
 
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
@@ -65,5 +66,6 @@ urlpatterns = [
     path('my_reviews/<int:appointment_id>/review/add/', views_my_appointment.my_review_add, name='my_review_add'),
     path('my_reviews/<int:review_id>/edit/', views_my_appointment.my_review_edit, name='my_review_edit'),
     path('my_reviews/<int:review_id>/delete/', views_review.my_review_delete, name='my_review_delete'),
+
 
 ]

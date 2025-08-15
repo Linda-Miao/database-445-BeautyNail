@@ -15,17 +15,23 @@
       /* ===== New Gradient Header ===== */
       .header {
         background: linear-gradient(135deg, #e91e63, #ad1457);
+        padding-bottom:3.75rem;
         color: white;
         padding: 3rem;
         text-align: center;
       }
 
+      .header + .nav { margin-top:1rem; }
+
       .header h1 { font-size: 3rem; margin: 0; }
       .header .tagline { font-size: 1.3rem; font-style: italic; opacity: 0.9; margin-top: 0.5rem; }
 
       /* ===== Keep old nav styles (dynamic Django nav below) ===== */
-      .nav-link { color: #e91e63 !important; font-weight: bold; }
-      .nav-link.active {background-color: #f0d374ff; color: #e91e63 !important;border-radius: 4px;}
+      .nav-link { color:#e91e63 !important; font-weight:bold; padding:.4rem 1rem; border-radius:9999px; transition:background-color .15s ease,color .15s ease; }
+      .nav-link.active { background-color:#e91e63; color:#fff !important; border-radius:9999px; box-shadow:0 6px 16px rgba(233,30,99,.25); }
+      .nav-link:not(.active):hover { background-color:rgba(233,30,99,.08); }
+      .nav-link:focus-visible { outline:3px solid rgba(233,30,99,.35); outline-offset:2px; border-radius:9999px; }
+
 
       /* ===== Buttons ===== */
       .btn-pink { background:#e91e63; color:#fff; }
@@ -111,7 +117,8 @@
     <nav class="nav mb-4 d-flex">
       <div class="d-flex">
 
-<a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Home</a>
+<a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Project Page</a>
+<a class="nav-link {% if request.path == '/home' %}active{% endif %}" href="/home">Home</a>
 
 {% if user.is_authenticated %}
   {% if user.is_superuser %}

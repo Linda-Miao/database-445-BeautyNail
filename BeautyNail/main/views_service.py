@@ -17,9 +17,28 @@ def get_services_by_search(query):
     sql += "ORDER BY category ASC, service_name ASC "
     return Service.objects.raw(sql, params)
 
+def get_top_services():
+    sql = """
+        SELECT
+            s.*,
+            COUNT(asv.service_id) AS usage_count,
+            (COUNT(asv.service_id) * s.base_price) AS total_benefit
+        FROM SERVICE s
+        JOIN APPOINTMENT_SERVICE asv
+          ON asv.service_id = s.service_id
+        GROUP BY s.service_id
+        ORDER BY total_benefit DESC
+        LIMIT 5
+    """
+    return Service.objects.raw(sql)
+
 def service_list(request):
     query = request.GET.get('search', '').strip()
-    services = get_services_by_search(query)
+    top = request.GET.get('top_services')
+    if top:
+        services = get_top_services()
+    else:
+        services = get_services_by_search(query)
     return render(request, 'services/services.html', {
         'services': services,
         'search_query': query,

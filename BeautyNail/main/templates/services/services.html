@@ -26,6 +26,9 @@
           <th>Duration (min)</th>
           <th>Category</th>
           <th>Requires Appt?</th>
+          {% if request.GET.top_services %}
+            <th class="table-warning">Total Benefit</th>
+          {% endif %}
           <th style="width:180px;">Actions</th>
         </tr>
       </thead>
@@ -39,6 +42,11 @@
           <td>{{ s.duration_minutes }}</td>
           <td>{{ s.category }}</td>
           <td>{{ s.requies_appointment|yesno:"Yes,No" }}</td>
+          {% if request.GET.top_services %}
+            <td class="table-warning fw-bold">
+              {{ s.total_benefit|floatformat:2 }}
+            </td>
+          {% endif %}
           <td class="actions-cell">
             <a href="{% url 'service_edit' s.service_id %}" class="btn btn-primary btn-sm">Edit</a>
             <form method="post" action="{% url 'service_delete' s.service_id %}" style="display:inline;">
@@ -58,6 +66,9 @@
 
     <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
       <form method="get" action="" class="mb-3" style="display:inline;">
+        <button type="submit" name="top_services" value="1" class="btn btn-warning btn-sm me-2">
+          Top 5 Services
+        </button>
         <button type="submit" class="btn btn-secondary btn-sm">Show All</button>
 
         <a href="{% url 'service_add' %}" class="btn btn-success btn-sm ms-2"

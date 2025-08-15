@@ -156,15 +156,17 @@
 {% endif %}
     <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Project Info</a>
       </div>
-      <div class="ms-auto d-flex align-items-center pe-3">
-        {% if user.is_authenticated %}
-          <span class="me-2 fw-bold">{{ user.first_name }} {{ user.last_name }}</span>
-          <span class="me-2">|</span>
-          <a class="nav-link text-danger p-0" href="{% url 'logout' %}">Logout</a>
-        {% else %}
-          <a class="nav-link p-0" href="{% url 'login' %}">Login</a>
-        {% endif %}
-      </div>
+<div class="ms-auto d-flex align-items-center pe-3">
+  {% if user.is_authenticated %}
+    <span class="me-2 fw-bold">{{ user.first_name }} {{ user.last_name }}</span>
+    <span class="me-2">|</span>
+    <a class="nav-link text-danger p-0" href="{% url 'logout' %}">Logout</a>
+  {% else %}
+    <a class="nav-link p-0" href="{% url 'login' %}">Login</a>
+    <span class="mx-2 text-muted">|</span>
+    <a class="nav-link p-0" href="{% url 'customer_add' %}?mode=register">Register</a>
+  {% endif %}
+</div>
     </nav>
 
     <!-- Content -->

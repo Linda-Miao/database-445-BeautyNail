@@ -58,7 +58,36 @@
     <form method="get" action="" class="mb-3" style="display:inline;">
       <a href="{% url 'appointment_list' %}" class="btn btn-secondary btn-sm">Show All</a>
     </form>
+
+
+    
     <a href="{% url 'appointment_add' %}" class="btn btn-success btn-sm">Add New Appointment</a>
+    <div class="mb-3">
+  <form method="get" class="d-inline-flex align-items-center gap-2">
+    <label for="appt_date" class="form-label mb-0" style="font-weight: 500;">Appointments on:</label>
+    <input type="date" id="appt_date" name="appt_date" style="width: 160px;"
+           value="{{ selected_date|default:'' }}" required>
+    <button type="submit" name="filter_by_date" value="1" class="btn btn-warning btn-sm">
+      View by Date
+    </button>
+  </form>
+</div>
+<div class="mb-3">
+  <form method="get" class="d-inline-flex align-items-center gap-2">
+    <label for="status" class="form-label mb-0" style="font-weight: 500;">Show by status:</label>
+    <select id="status" name="status" style="width: 180px;">
+      <option value="">-- Select Status --</option>
+      {% for sc in status_choices %}
+        <option value="{{ sc }}" {% if selected_status == sc %}selected{% endif %}>
+          {{ sc|capfirst }}
+        </option>
+      {% endfor %}
+    </select>
+    <button type="submit" name="show_by_status" value="1" class="btn btn-warning btn-sm">
+      View by Status
+    </button>
+  </form>
+</div>
   </div>
 </div>
 {% endblock %}

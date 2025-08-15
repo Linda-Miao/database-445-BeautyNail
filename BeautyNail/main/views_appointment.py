@@ -3,7 +3,7 @@ from django.db import connection, transaction
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required  # optional; use if you want auth
-from datetime import datetime, timedelta, time 
+from datetime import datetime, timedelta, time , date
 import re
 from decimal import Decimal
 
@@ -157,25 +157,52 @@ ADMIN_TIME_SLOTS = [
 
 
 # ---------- list ----------
+def get_appointments_by_status(status_str):
+    """
+    Case-insensitive filter by status: pending/completed/scheduled/cancelled.
+    """
+    sql = """
+        SELECT
+            a.appointment_id,
+            a.appointment_id AS id,
+            a.appointment_date AS date,
+            a.start_time       AS start,
+            a.end_time         AS end,
+            a.status,
+            a.total_amount     AS total,
+            CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+            CONCAT(s.first_name, ' ', s.last_name) AS staff_name
+        FROM appointment a, customer c, staff s
+        WHERE a.customer_id = c.customer_id
+          AND a.staff_id    = s.staff_id
+          AND LOWER(a.status) = LOWER(%s)
+        ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC
+    """
+    return Appointment.objects.raw(sql, [status_str.strip()])
 
-# def appointment_list(request):
-#     with connection.cursor() as c:
-#         c.execute("""
-#             SELECT a.appointment_id, a.appointment_date, a.start_time, a.end_time,
-#                    a.status, a.total_amount,
-#                    CONCAT(c.first_name,' ',c.last_name) AS customer_name,
-#                    CONCAT(s.first_name,' ',s.last_name) AS staff_name
-#             FROM APPOINTMENT a, CUSTOMER c, STAFF s
-#             WHERE a.customer_id = c.customer_id
-#               AND a.staff_id = s.staff_id
-#             ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC
-#         """)
-#         rows = c.fetchall()
-#     appts = [{
-#         'id': r[0], 'date': r[1], 'start': r[2], 'end': r[3],
-#         'status': r[4], 'total': r[5], 'customer': r[6], 'staff': r[7]
-#     } for r in rows]
-#     return render(request, 'appointments/appointments.html', {'appointments': appts})
+
+def get_appointments_by_date(day_str):
+    """
+    Return appointments for a single calendar date (YYYY-MM-DD).
+    """
+    sql = """
+        SELECT
+            a.appointment_id,
+            a.appointment_id AS id,
+            a.appointment_date AS date,
+            a.start_time       AS start,
+            a.end_time         AS end,
+            a.status,
+            a.total_amount     AS total,
+            CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+            CONCAT(s.first_name, ' ', s.last_name) AS staff_name
+        FROM appointment a, customer c, staff s
+        WHERE a.customer_id = c.customer_id
+          AND a.staff_id    = s.staff_id
+          AND a.appointment_date = %s
+        ORDER BY a.appointment_date DESC, a.start_time DESC, a.appointment_id DESC
+    """
+    return Appointment.objects.raw(sql, [day_str])
 
 def get_appointments_by_search(query):
     sql = """
@@ -213,14 +240,32 @@ def get_appointments_by_search(query):
 
 
 def appointment_list(request):
-    query = request.GET.get('search', '').strip()
-    appointments = get_appointments_by_search(query)
+    query = (request.GET.get('search') or '').strip()
+
+    # date filter (existing)
+    filter_by_date = request.GET.get('filter_by_date')
+    selected_date = request.GET.get('appt_date')
+    if not selected_date:
+        selected_date = date.today().isoformat()
+
+    # NEW: status filter
+    show_by_status = request.GET.get('show_by_status')
+    selected_status = (request.GET.get('status') or '').strip()
+
+    if show_by_status and selected_status:
+        appointments = get_appointments_by_status(selected_status)
+    elif filter_by_date:
+        appointments = get_appointments_by_date(selected_date)
+    else:
+        appointments = get_appointments_by_search(query)
 
     return render(request, 'appointments/appointments.html', {
         'appointments': appointments,
-        'search_query': query
+        'search_query': query,
+        'selected_date': selected_date,
+        'status_choices': STATUS_CHOICES,   # pass choices to template
+        'selected_status': selected_status, # keep the selection
     })
-
 
 # ---------- create ----------
 

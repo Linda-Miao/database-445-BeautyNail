@@ -70,7 +70,7 @@ def views_project_page(request):
 
 def services_all(request):
     services = Service.objects.all().order_by('service_name')
-    return render(request, 'services/service_home.html', {'services': services})
+    return render(request, 'service_home.html', {'services': services})
 
 def views_about(request):
         return render(request, 'about.html', )

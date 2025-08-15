@@ -2,7 +2,13 @@
 {% block content %}
 <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
   <div>
+
+      {% if request.GET.mode == 'register' %}
+    <h2 class="text-center mb-4">Register</h2>
+  {% else %}
     <h2 class="text-center mb-4">Add New Customer</h2>
+  {% endif %}
+   
     <form method="post" action="{% url 'customer_add' %}">
       {% csrf_token %}
       <table>

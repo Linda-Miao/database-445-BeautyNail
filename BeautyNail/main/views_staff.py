@@ -60,12 +60,14 @@ def get_positive_staff():
 
 def get_employee_of_the_month(year, month):
     sql = """
-        SELECT staff.staff_id, staff.first_name, staff.last_name, SUM(payment.amount + payment.tip_amount) AS contribution
-        FROM staff
-        JOIN appointment ON appointment.staff_id = staff.staff_id
-        JOIN payment ON payment.appointment_id = appointment.appointment_id
-        WHERE YEAR(appointment.appointment_date) = %s AND MONTH(appointment.appointment_date) = %s
-        GROUP BY staff.staff_id
+        SELECT s.staff_id, s.first_name, s.last_name, SUM(p.amount) AS contribution
+        FROM staff s, appointment a, payment p
+        WHERE s.staff_id = a.staff_id
+        AND a.appointment_id = p.appointment_id
+        
+        AND YEAR(a.appointment_date) = %s AND MONTH(a.appointment_date) = %s
+        AND a.status = 'completed'
+        GROUP BY s.staff_id
         ORDER BY contribution DESC
         LIMIT 5
     """

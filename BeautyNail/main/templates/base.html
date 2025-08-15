@@ -117,8 +117,28 @@
     <nav class="nav mb-4 d-flex">
       <div class="d-flex">
 
-<a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Project Page</a>
-<a class="nav-link {% if request.path == '/home' %}active{% endif %}" href="/home">Home</a>
+
+{% if not request.user.is_superuser %}
+  <a class="nav-link {% if request.path == '/home' %}active{% endif %}" href="/home">Home</a>
+{% endif %}
+
+
+{% if not request.user.is_superuser %}
+  <a class="nav-link {% if request.path == '/customer_reviews/' %}active{% endif %}" href="{% url 'customer_reviews' %}">Customer Reviews</a>
+{% endif %}
+
+{% if not request.user.is_authenticated %}
+  <a class="nav-link {% if request.resolver_match.url_name == 'guest_appointment_add' %}active{% endif %}"
+     href="{% url 'guest_appointment_add' %}">Book Appointment</a>
+{% endif %}
+{% if not request.user.is_superuser %}
+  <a class="nav-link {% if request.resolver_match.url_name == 'services_all' %}active{% endif %}"
+     href="{% url 'services_all' %}">Our Services</a>
+{% endif %}
+
+
+
+
 
 {% if user.is_authenticated %}
   {% if user.is_superuser %}
@@ -134,6 +154,7 @@
     <a class="nav-link {% if '/my_appointments/' in request.path %}active{% endif %}" href="/my_appointments/">My Appointments</a>
   {% endif %}
 {% endif %}
+    <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">Project Info</a>
       </div>
       <div class="ms-auto d-flex align-items-center pe-3">
         {% if user.is_authenticated %}

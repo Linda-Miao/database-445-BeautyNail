@@ -1,11 +1,16 @@
 from django.urls import path
 from . import (views, views_customer, views_staff, views_event, views_inventory, 
                views_service, views_appointment, views_my_appointment, views_payment, 
-               views_guest_appointment, views_review)
+               views_guest_appointment, views_review, views_guest_appointment)
 
 urlpatterns = [
     path('', views.views_project_page, name='project_page'),
     path('home/', views.home, name='home'),
+    path('customer_reviews/', views.customer_reviews, name='customer_reviews'),
+    path('guest_book_appointment/', views_guest_appointment.guest_appointment_add, name='guest_appointment_add'),
+    path("guest_book_appointment/success/<int:appointment_id>/",views_guest_appointment.guest_appointment_success, name="guest_appointment_success"),
+    path('services_home/', views.services_all, name='services_all'),
+    
 
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),

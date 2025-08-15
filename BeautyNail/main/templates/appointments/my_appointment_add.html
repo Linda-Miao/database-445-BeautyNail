@@ -67,6 +67,7 @@
           <td>
             <div id="services-list">
               <div class="service-row mb-2">
+                {% with pre_id=request.GET.prefill_service|stringformat:"s" %}
                 <select
                   name="service_ids[]"
                   class="form-select d-inline-block"
@@ -74,11 +75,12 @@
                 >
                   <option value="">-- Select Service --</option>
                   {% for s in svc_opts %}
-                  <option value="{{ s.id }}">
-                    {{ s.name }} (${{ s.price }})
-                  </option>
+                    <option value="{{ s.id }}" {% if pre_id == s.id|stringformat:"s" %}selected{% endif %}>
+                      {{ s.name }} (${{ s.price }})
+                    </option>
                   {% endfor %}
                 </select>
+                {% endwith %}
                 <input
                   type="text"
                   name="polish_colors[]"

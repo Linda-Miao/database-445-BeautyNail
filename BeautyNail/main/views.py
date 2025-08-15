@@ -23,6 +23,34 @@ def _popular_services(limit=4):
     """
     return list(Service.objects.raw(sql, [limit]))
 
+def _top_testimonials(limit=6):
+    sql = """
+        SELECT
+            r.review_id,                                   -- pk required by Django raw()
+            CONCAT(c.first_name, ' ', c.last_name) AS author_name,
+            r.comment,
+            r.rating,
+            (
+              SELECT s.service_name
+              FROM APPOINTMENT a2
+              JOIN APPOINTMENT_SERVICE aps ON aps.appointment_id = a2.appointment_id
+              JOIN SERVICE s ON s.service_id = aps.service_id
+              WHERE a2.appointment_id = r.appointment_id
+              LIMIT 1
+            ) AS service_name
+        FROM REVIEW r, CUSTOMER c
+        WHERE c.customer_id = r.customer_id
+        AND r.comment IS NOT NULL AND r.comment <> ''
+        ORDER BY r.rating DESC, r.review_id DESC
+        LIMIT %s
+    """
+    return list(Review.objects.raw(sql, [limit]))
+
+def customer_reviews(request):
+    # Pass dynamic reviews if available; template falls back to static samples if empty
+    reviews = _top_testimonials(6)
+    return render(request, 'customer_reviews.html', {'reviews': reviews})
+
 def home(request):
     popular_services = _popular_services(4)
     return render(request, 'home.html', {'popular_services': popular_services})
@@ -39,6 +67,10 @@ def views_project_page(request):
         'customers_count': customers_count,
         'appointments_count': appointments_count,
     })
+
+def services_all(request):
+    services = Service.objects.all().order_by('service_name')
+    return render(request, 'services/service_home.html', {'services': services})
 
 def views_about(request):
         return render(request, 'about.html', )

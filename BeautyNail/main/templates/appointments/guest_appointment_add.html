@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Book Appointment - BeautyNailNet{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ===== Guest booking (one-line rules) ===== */
+.page-title{margin-bottom:1rem;}
+.page-intro{text-align:center;margin:1rem 0 2rem 0;}
+.page-intro h2{color:#2c2c2c;font-size:2.5rem;margin-bottom:1rem;}
+.page-intro p{color:#666;font-size:1.2rem;margin:0 auto;max-width:820px;}
+.booking-layout{display:grid;grid-template-columns:520px 560px;gap:1rem;justify-content:center;align-items:start;max-width:1120px;margin:0 auto;}
+.calendar-section{background:#fff;padding:2rem;border-radius:15px;box-shadow:0 5px 15px rgba(0,0,0,.1);width:100%;max-width:none;}
+.calendar-title{font-size:1.5rem;color:#2c2c2c;font-weight:600;margin:0 0 1rem 0;}
+.booking-form{background:#fff;padding:2rem;border-radius:15px;box-shadow:0 5px 15px rgba(0,0,0,.1);width:100%;}
+.form-input,.form-select{width:100%;padding:1rem;margin:.5rem 0;border:2px solid #f0f0f0;border-radius:8px;}
+.book-btn{background:#e91e63;color:#fff;padding:1rem 2rem;border:none;border-radius:25px;cursor:pointer;width:100%;margin:.5rem 0;}
+.book-btn.alt{background:transparent;color:#e91e63;border:2px solid #e91e63;}
+#time_grid .time-slot-btn.active{background:#e91e63;color:#fff;}
+.service-row{display:flex;align-items:center;gap:.5rem;flex-wrap:nowrap;margin:.5rem 0;}
+.service-select{flex:1 1 66%;}
+.service-color{flex:1 1 28%;}
+.service-row .btn{flex:0 0 auto;padding:.25rem .5rem;}
+@media (max-width:1200px){.booking-layout{grid-template-columns:520px 520px;gap:.875rem;max-width:1080px;}}
+@media (max-width:992px){.booking-layout{grid-template-columns:1fr;max-width:640px;}}
+
+/* ===== Simple popup (no overlay) with summary ===== */
+.popup{position:fixed;top:14vh;left:50%;transform:translateX(-50%);z-index:1050;display:none;}
+.popup.show{display:block;}
+.popup-card{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.18);width:min(680px,92vw);padding:1rem;}
+.popup-head{font-weight:700;font-size:1.05rem;margin-bottom:.5rem; text-align:center;}
+.popup-body{font-size:.95rem;margin-bottom:.75rem;}
+.popup-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem 1rem;}
+.popup-services{grid-column:1/-1;}
+.popup-list{margin:.25rem 0 0 .75rem;}
+.popup-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem;}
+@media (max-width:576px){.popup-grid{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-intro">
+    <h2>Book Appointment</h2>
+  </div>
+
+  <div class="booking-layout">
+    <!-- LEFT: Calendar + Time (reusing your picker + JS) -->
+    <div class="calendar-section rounded-4 shadow-sm">
+      <h3 class="calendar-title">Pick a date & time</h3>
+
+      <!-- DATE (Flatpickr mounts here) -->
+      <div id="inline_date"></div>
+
+      <!-- Hidden fields submitted to backend -->
+      <input type="hidden" id="appointment_date" name="appointment_date" form="guest-booking-form" required>
+      <input type="hidden" id="start_time" name="start_time" form="guest-booking-form" required>
+
+      <!-- TIME (2 rows × 3 cols) -->
+      <div class="mt-4">
+        <h6 class="mb-3">Available Times</h6>
+        <div id="time_grid" class="row g-3">
+          <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="09:00:00">9:00 AM</button></div>
+          <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="10:30:00">10:30 AM</button></div>
+          <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="12:00:00">12:00 PM</button></div>
+          <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="13:30:00">1:30 PM</button></div>
+          <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="15:00:00">3:00 PM</button></div>
+          <div class="col-4"><button type="button" class="btn btn-light w-100 time-slot-btn" data-time="18:30:00">6:30 PM</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Booking form -->
+    <div class="booking-form">
+      <h3>Book Your Appointment</h3>
+
+      <form id="guest-booking-form" method="post" action="{% url 'guest_appointment_add' %}">
+        {% csrf_token %}
+
+        <!-- Staff (required to satisfy DB constraint) -->
+        <select name="staff_id" class="form-select" required>
+          <option value="">Select active staff</option>
+          {% for s in staff_opts %}
+            <option value="{{ s.id }}">{{ s.name }}{% if s.specialty %} — {{ s.specialty }}{% endif %}</option>
+          {% endfor %}
+        </select>
+
+        <!-- Guest identity -->
+        <input type="text" name="first_name" class="form-input" placeholder="First Name *" required>
+        <input type="text" name="last_name"  class="form-input" placeholder="Last Name *" required>
+        <input type="email" name="email"     class="form-input" placeholder="Email Address *" required>
+        <input type="tel"   name="phone"     class="form-input" placeholder="Phone Number (e.g., 360-123-4567)" required>
+
+        <!-- Services (same widget as member add page; on one line) -->
+        <label class="form-label">Services</label>
+        <div id="services-list">
+          <div class="service-row">
+            {% with pre_id=request.GET.prefill_service|stringformat:"s" %}
+    <select name="service_ids[]" class="form-select service-select">
+      <option value="">-- Select Service --</option>
+      {% for s in svc_opts %}
+        {# s.id is often an int; convert to string for safe comparison #}
+        <option value="{{ s.id }}" {% if pre_id == s.id|stringformat:"s" %}selected{% endif %}>
+          {{ s.name }} (${{ s.price }})
+        </option>
+      {% endfor %}
+      <option value="unsure">Not sure yet — I'll decide during consultation</option>
+    </select>
+    {% endwith %}
+
+            <input type="text" name="polish_colors[]" class="form-control service-color" placeholder="Polish color">
+
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="addServiceRow()">+</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="removeServiceRow(this)">−</button>
+          </div>
+        </div>
+
+        <textarea name="notes" rows="3" class="form-input" placeholder="Notes (optional)"></textarea>
+
+        <!-- Hidden confirm flag + hidden real submit -->
+        <input type="hidden" name="confirm_booking" id="confirm_booking" value="0">
+        <button type="button" id="bookNowBtn" class="book-btn">Book Now</button>
+        <button type="submit" id="realSubmit" style="display:none;"></button>
+      </form>
+
+      <!-- Simple Popup with Summary -->
+      <div id="bookingPopup" class="popup">
+        <div class="popup-card">
+          <div class="popup-head ">Check My Booking</div>
+          <div class="popup-body">
+            <div class="popup-grid">
+              <div><strong>Name:</strong> <span id="pName"></span></div>
+              <div><strong>Customer Email:</strong> <span id="pEmail"></span></div>
+              <div><strong>Customer Phone:</strong> <span id="pPhone"></span></div>
+              <div><strong>Staff:</strong> <span id="pStaff"></span></div>
+              <div><strong>Date:</strong> <span id="pDate"></span></div>
+              <div><strong>Time:</strong> <span id="pTime"></span></div>
+              <div class="popup-services"><strong>Services:</strong>
+                <ul id="pServices" class="popup-list"></ul>
+              </div>
+              <div class="popup-services"><strong>Notes:</strong> <span id="pNotes"></span></div>
+            </div>
+          </div>
+          <div class="popup-actions">
+            <button type="button" id="popupCancel" class="btn btn-secondary">Cancel</button>
+            <button type="button" id="popupConfirm" class="btn btn-success">Confirm</button>
+          </div>
+        </div>
+      </div>
+      <!-- /Simple Popup -->
+
+    </div>
+  </div>
+</div>
+
+<!-- Use the same JS your member page uses -->
+<script src="{% static 'js/appointments.js' %}" defer></script>
+
+<script>
+(function(){
+  const form = document.getElementById('guest-booking-form');
+  const bookBtn = document.getElementById('bookNowBtn');
+  const popup = document.getElementById('bookingPopup');
+  const cancelBtn = document.getElementById('popupCancel');
+  const confirmBtn = document.getElementById('popupConfirm');
+  const realSubmit = document.getElementById('realSubmit');
+  const confirmFlag = document.getElementById('confirm_booking');
+
+  const $ = (s, r=document)=>r.querySelector(s);
+  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+
+  const fmtDate = iso => { if(!iso) return ''; const [y,m,d]=iso.split('-'); return `${m}/${d}/${y}`; };
+  const getSelectedText = sel => (sel && sel.selectedIndex >= 0) ? sel.options[sel.selectedIndex].textContent.trim() : '';
+
+  bookBtn.addEventListener('click', function(){
+    // Validate visible inputs
+    if(!form.reportValidity()) return;
+
+    // Ensure date & time chosen (hidden inputs)
+    const dateVal = ($('#appointment_date').value||'').trim();
+    const timeVal = ($('#start_time').value||'').trim();
+    if(!dateVal || !timeVal){ alert('Please pick a date and a time.'); return; }
+
+    // Fill summary
+    $('#pName').textContent  = `${($('[name="first_name"]').value||'').trim()} ${($('[name="last_name"]').value||'').trim()}`.trim();
+    $('#pEmail').textContent = ($('[name="email"]').value||'').trim();
+    $('#pPhone').textContent = ($('[name="phone"]').value||'').trim();
+    $('#pStaff').textContent = getSelectedText($('[name="staff_id"]'));
+    $('#pDate').textContent  = fmtDate(dateVal);
+
+    const activeTimeBtn = document.querySelector('.time-slot-btn.active');
+    $('#pTime').textContent = activeTimeBtn ? activeTimeBtn.textContent.trim() : timeVal;
+    $('#pNotes').textContent = ($('[name="notes"]').value||'').trim();
+
+    const list = $('#pServices'); list.innerHTML = '';
+    const rows = $$('#services-list .service-row');
+    let unsure = false;
+    rows.forEach(r=>{
+      const sel = r.querySelector('select[name="service_ids[]"]');
+      const val = (sel?.value||'').trim();
+      if(val === 'unsure') unsure = true;
+      if(val){
+        const label = getSelectedText(sel);
+        const color = (r.querySelector('input[name="polish_colors[]"]')?.value||'').trim();
+        const li = document.createElement('li');
+        li.textContent = color ? `${label} — ${color}` : label;
+        list.appendChild(li);
+      }
+    });
+    if(unsure){
+      list.innerHTML = '';
+      const li = document.createElement('li');
+      li.textContent = "Not sure yet — I'll decide during consultation";
+      list.appendChild(li);
+    } else if(!list.children.length){
+      const li = document.createElement('li');
+      li.textContent = '—';
+      list.appendChild(li);
+    }
+
+    // Show popup
+    popup.classList.add('show');
+  });
+
+  cancelBtn.addEventListener('click', ()=> popup.classList.remove('show'));
+  confirmBtn.addEventListener('click', ()=>{
+    popup.classList.remove('show');
+    confirmFlag.value = '1';
+    realSubmit.click();
+  });
+})();
+</script>
+{% endblock %}

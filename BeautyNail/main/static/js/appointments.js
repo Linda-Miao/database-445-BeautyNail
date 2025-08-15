@@ -84,10 +84,34 @@ function initTime() {
   });
 }
 
+// book now in services page
+  function prefillServiceFromQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const idRaw = params.get('prefill_service');
+    if (!idRaw) return;
+    const wanted = idRaw.trim();
 
+    // Find selects inside the services list (guest + member forms)
+    const selects = document.querySelectorAll('#services-list select[name="service_ids[]"]');
+    if (!selects.length) return;
 
+    // Prefer an empty select; fallback to the first one
+    const target = Array.from(selects).find(s => !s.value || s.value.trim() === '') || selects[0];
+
+    // Match by option value
+    const opt = Array.from(target.options).find(o => (o.value || '').trim() === wanted);
+    if (opt) {
+      target.value = opt.value;
+      target.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  // Run initializers
   document.addEventListener('DOMContentLoaded', function () {
     initDate();
     initTime();
+    prefillServiceFromQuery();
   });
+
+
 })();

@@ -236,7 +236,7 @@ def customer_edit(request, customer_id):
         'registration_date': row[9],
         'is_active': row[10],
     }
-    return render(request, 'customers\customer_edit.html', {'customer': customer})
+    return render(request, 'customers/customer_edit.html', {'customer': customer})
 
 def customer_delete(request, customer_id):
     if request.method == 'POST':
@@ -302,7 +302,7 @@ def customer_list(request):
     else:
         customers = get_customers_by_search(query)
 
-    return render(request, 'customers\customers.html', {
+    return render(request, 'customers/customers.html', {
         'customers': customers,
         'search_query': query
     })

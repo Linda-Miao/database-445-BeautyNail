@@ -1,12 +1,28 @@
 from django.shortcuts import render, redirect	
 from django.contrib import messages
 from django.http import HttpResponse
-from .models import Customer, Review, Staff, Service
+from .models import Customer, Review, Staff, Service, Event
 from django.db import connection
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 # Create your views here.
 
+def _active_events(limit=4):
+    sql = """
+        SELECT
+            e.events_id,        -- PK required by raw()
+            e.event_name,
+            e.description,
+            e.start_date,
+            e.end_date,
+            e.image
+        FROM events e
+        WHERE e.start_date <= CURDATE()
+          AND (e.end_date IS NULL OR e.end_date >= CURDATE())
+        ORDER BY e.start_date ASC, e.events_id ASC
+        LIMIT %s
+    """
+    return list(Event.objects.raw(sql, [limit]))
 def _popular_services(limit=4):
     sql = """
         SELECT
@@ -53,7 +69,11 @@ def customer_reviews(request):
 
 def home(request):
     popular_services = _popular_services(4)
-    return render(request, 'home.html', {'popular_services': popular_services})
+    active_events = _active_events(4)  
+    return render(request, 'home.html', {
+        'popular_services': popular_services,
+        'active_events': active_events,   
+    })
 
 def views_project_page(request):
     with connection.cursor() as cursor:
@@ -84,9 +104,9 @@ def user_login(request):
             login(request, user)
             return redirect('home')  # Go to home page
         else:
-            messages.error(request, 'Invalid username or password',xtra_tags="login_error")
+            messages.error(request, 'Invalid username or password',extra_tags="login_error")
     return render(request, 'login.html')
 
 def user_logout(request):
     logout(request)
-    return redirect('login')  # Back to login page
+    return redirect('home') 

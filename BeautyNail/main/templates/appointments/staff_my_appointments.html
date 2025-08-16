@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>My Appointments (Staff)</h2>
+
+<form method="get" class="mb-3">
+  <div class="input-group">
+    <input type="text" name="search" class="form-control"
+           placeholder="Search by customer name or status..."
+           value="{{ search_query|default:'' }}">
+    <button class="btn btn-outline-secondary" type="submit">Search</button>
+  </div>
+</form>
+
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>Status</th>
+      <th>Total Amount</th>
+      <th>Customer</th>
+      <th>Review</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for appt in appointments %}
+      <tr>
+        <td>{{ appt.date }}</td>
+        <td>{{ appt.start|default:"-"|time:"g:i A" }}</td>
+        <td>{{ appt.end|default:"-"|time:"g:i A" }}</td>
+        <td>{{ appt.status }}</td>
+        <td>
+          {% if appt.total %}
+            ${{ appt.total }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>{{ appt.customer_name }}</td>
+       <td>
+  {% if appt.status|lower == 'completed' and appt.review_id %}
+    <div>
+      <span class="text-warning" style="letter-spacing:1px;">
+        {% for _ in "12345" %}
+          {% if forloop.counter <= appt.review_rating %}★{% else %}☆{% endif %}
+        {% endfor %}
+      </span>
+      <span class="ms-1">({{ appt.review_rating }}/5)</span>
+    </div>
+    <div class="text-muted small">
+      {{ appt.review_comment|default:"(no comment)" }}
+    </div>
+  {% else %}
+    -
+  {% endif %}
+</td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="7" class="text-center">No appointments found.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<form method="get" action="" class="mb-3" style="display:inline;">
+  <a href="{% url 'staff_my_appointments' %}" class="btn btn-secondary btn-sm">Show All</a>
+</form>
+{% endblock %}

@@ -55,6 +55,8 @@ urlpatterns = [
     path('my_appointments/add/', views_my_appointment.my_appointment_add, name='my_appointment_add'),
     path('my_appointments/<int:appointment_id>/edit/', views_my_appointment.my_appointment_edit, name='my_appointment_edit'),
     #path('guest_appointments/', views_guest_appointment.guest_appointment_add, name='guest_appointments_add'),
+    path('staff/my_appointments/', views_staff.staff_my_appointments, name='staff_my_appointments'),
+
 
     # payment paths
     path('payments/', views_payment.payment_list, name='payment_list'),

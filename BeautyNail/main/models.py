@@ -239,17 +239,42 @@ class Service(models.Model):
         db_table = 'service'
 
 
+# class Staff(models.Model):
+#     staff_id = models.AutoField(primary_key=True)
+#     first_name = models.CharField(max_length=50)
+#     last_name = models.CharField(max_length=50)
+#     phone = models.CharField(max_length=15)
+#     email = models.CharField(max_length=100)
+#     hire_date = models.DateField()
+#     position = models.CharField(max_length=50)
+#     commission_rate = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+#     specialty = models.CharField(max_length=100, blank=True, null=True)
+#     is_active = models.IntegerField(blank=True, null=True)
+
+#     class Meta:
+#         managed = False
+#         db_table = 'staff'
 class Staff(models.Model):
     staff_id = models.AutoField(primary_key=True)
+
+    # NEW: link to auth_user via staff.user_id
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.DO_NOTHING,   # DB constraint: ON DELETE SET NULL (OK to keep DO_NOTHING here)
+        db_column='user_id',
+        null=True, blank=True,
+        related_name='staffs'
+    )
+
     first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    phone = models.CharField(max_length=15)
-    email = models.CharField(max_length=100)
-    hire_date = models.DateField()
-    position = models.CharField(max_length=50)
+    last_name  = models.CharField(max_length=50)
+    phone      = models.CharField(max_length=15)
+    email      = models.CharField(max_length=100)
+    hire_date  = models.DateField()
+    position   = models.CharField(max_length=50)
     commission_rate = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    specialty = models.CharField(max_length=100, blank=True, null=True)
-    is_active = models.IntegerField(blank=True, null=True)
+    specialty  = models.CharField(max_length=100, blank=True, null=True)
+    is_active  = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False

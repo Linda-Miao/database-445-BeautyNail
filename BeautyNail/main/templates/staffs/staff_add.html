@@ -3,22 +3,69 @@
 <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
   <div>
     <h2 class="text-center mb-4">Add New Staff</h2>
+
     <form method="post" action="{% url 'staff_add' %}">
       {% csrf_token %}
-      <input type="text" name="first_name" placeholder="First Name" required><br>
-      <input type="text" name="last_name" placeholder="Last Name" required><br>
-      <input type="text" name="phone" placeholder="Phone" required><br>
-      <input type="email" name="email" placeholder="Email"><br>
-      <input type="date" name="hire_date" placeholder="Hire Date" required><br>
-      <input type="text" name="position" placeholder="Position" required><br>
-      <input type="number" name="commission_rate" placeholder="Commission Rate (e.g. 0.15)" step="0.01" min="0" max="1" value="0.15" required><br>
-      <input type="text" name="specialty" placeholder="Specialty"><br>
-      <select name="is_active">
-        <option value="1" selected>Active</option>
-        <option value="0">Inactive</option>
-      </select>
-      <button type="submit" class="btn btn-success btn-sm ms-2">Add Staff</button>
-      <a href="{% url 'staff_list' %}" class="btn btn-secondary btn-sm ms-2">Cancel</a>
+      <table>
+        <tr>
+          <td><label for="first_name">First Name:</label></td>
+          <td><input type="text" id="first_name" name="first_name" required></td>
+        </tr>
+        <tr>
+          <td><label for="last_name">Last Name:</label></td>
+          <td><input type="text" id="last_name" name="last_name" required></td>
+        </tr>
+        <tr>
+          <td><label for="phone">Phone:</label></td>
+          <td><input type="text" id="phone" name="phone" required></td>
+        </tr>
+        <tr>
+          <td><label for="email">Email:</label></td>
+          <td><input type="email" id="email" name="email"></td>
+        </tr>
+        <tr>
+          <td><label for="hire_date">Hire Date:</label></td>
+          <td><input type="date" id="hire_date" name="hire_date" required></td>
+        </tr>
+        <tr>
+          <td><label for="position">Position:</label></td>
+          <td><input type="text" id="position" name="position" required></td>
+        </tr>
+        <tr>
+          <td><label for="commission_rate">Commission Rate:</label></td>
+          <td><input type="number" id="commission_rate" name="commission_rate" step="0.01" min="0" max="1" value="0.15" required></td>
+        </tr>
+        <tr>
+          <td><label for="specialty">Specialty:</label></td>
+          <td><input type="text" id="specialty" name="specialty"></td>
+        </tr>
+        <tr>
+          <td><label for="is_active">Status:</label></td>
+          <td>
+            <select id="is_active" name="is_active">
+              <option value="1" selected>Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </td>
+        </tr>
+
+        <!-- Optional auth fields (match customer/edit style) -->
+        <tr>
+          <td><label for="username">Username (login):</label></td>
+          <td><input type="text" id="username" name="username" placeholder="optional"></td>
+        </tr>
+        <tr>
+          <td><label for="password">Password:</label></td>
+          <td><input type="password" id="password" name="password" placeholder="optional"></td>
+        </tr>
+
+        <tr>
+          <td colspan="2" style="text-align:center; padding-top:12px;">
+            <button type="submit" class="btn btn-success me-2">Add Staff</button>
+            <a href="{% url 'staff_list' %}" class="btn btn-secondary">Cancel</a>
+          </td>
+        </tr>
+      </table>
     </form>
   </div>
 </div>

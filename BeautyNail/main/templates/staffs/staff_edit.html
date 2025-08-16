@@ -3,6 +3,9 @@
 <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
   <div>
     <h2 class="text-center mb-4">Edit Staff</h2>
+    {% if error %}
+  <div class="alert alert-danger" role="alert">{{ error }}</div>
+{% endif %}
     <form method="post">
       {% csrf_token %}
       <table>
@@ -47,6 +50,14 @@
             </select>
           </td>
         </tr>
+        <tr>
+  <td><label for="username">Username (login):</label></td>
+  <td><input type="text" id="username" name="username" value="{{ staff.username|default:'' }}" placeholder="leave blank if unchanged"></td>
+</tr>
+<tr>
+  <td><label for="password">New Password:</label></td>
+  <td><input type="password" id="password" name="password" placeholder="leave blank if unchanged"></td>
+</tr>
         <tr>
           <td colspan="2" style="text-align:center; padding-top:12px;">
             <button type="submit" class="btn btn-success me-2">Update</button>

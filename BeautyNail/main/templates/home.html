@@ -22,6 +22,14 @@
 .service-card h4{color:#e91e63;font-size:1.3rem;margin-bottom:.5rem;}
 .service-card .price{font-size:1.5rem;font-weight:700;color:#2c2c2c;margin:.5rem 0;}
 .service-card p{color:#666;font-size:.9rem;margin:0;}
+.events-highlight{margin:3rem 0;}
+.events-highlight h3{text-align:center;font-size:2.5rem;color:#2c2c2c;margin-bottom:2rem;}
+.events-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;}
+.event-card{background:#fff;padding:2rem;border-radius:15px;box-shadow:0 5px 15px rgba(0,0,0,.1);text-align:center;}
+.event-card h4{color:#e91e63;font-size:1.3rem;margin-bottom:.5rem;}
+.event-card .dates{font-size:.95rem;color:#333;margin:.25rem 0 .75rem;}
+.event-card p{color:#666;font-size:.9rem;margin:0;}
+.event-card img{max-width:100%;height:auto;max-height:250px;border-radius:10px;margin-bottom:.75rem;}
 </style>
 {% endblock %}
 
@@ -70,6 +78,30 @@
     </div>
   {% else %}
     <p class="text-center text-muted">No service usage yet.</p>
+  {% endif %}
+</section>
+
+<section class="events-highlight">
+  <h3>Happening Now</h3>
+
+  {% if active_events %}
+    <div class="events-grid">
+      {% for e in active_events %}
+        <div class="event-card">
+          {% if e.image %}
+            <img src="{% static e.image %}" alt="{{ e.event_name }}">
+          {% endif %}
+          <h4>{{ e.event_name }}</h4>
+          <div class="dates">
+            {{ e.start_date|date:"M d, Y" }}
+            {% if e.end_date %} – {{ e.end_date|date:"M d, Y" }}{% endif %}
+          </div>
+          <p>{{ e.description|default:"-" }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-center text-muted">No events are active today.</p>
   {% endif %}
 </section>
 </div>

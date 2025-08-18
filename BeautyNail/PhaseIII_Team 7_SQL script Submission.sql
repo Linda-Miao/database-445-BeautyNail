@@ -137,20 +137,33 @@ CREATE TABLE IF NOT EXISTS `PAYMENT` (
   `payment_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `transaction_id` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`payment_id`),
-  FOREIGN KEY (`appointment_id`) REFERENCES `APPOINTMENT` (`appointment_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  UNIQUE KEY `uq_payment_appt` (`appointment_id`), 
+  FOREIGN KEY (`appointment_id`) REFERENCES `APPOINTMENT` (`appointment_id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
   AUTO_INCREMENT = 11;
 
 -- table review: store data about the reviews by customers 
 CREATE TABLE IF NOT EXISTS `REVIEW` (
-  `review_id` int NOT NULL AUTO_INCREMENT,
-  `customer_id` int NOT NULL,
-  `appointment_id` int NOT NULL,
-  `staff_id` int NOT NULL,
-  `rating` int NOT NULL,
-  `comment` text,
-  `review_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`review_id`)
+  `review_id`    INT NOT NULL AUTO_INCREMENT,
+  `customer_id`  INT NOT NULL,
+  `appointment_id` INT NOT NULL,
+  `staff_id`     INT NOT NULL,
+  `rating`       INT NOT NULL,
+  `comment`      TEXT,
+  `review_date`  TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`review_id`),
+  UNIQUE KEY `uq_review_appt` (`appointment_id`), 
+
+  CONSTRAINT `fk_review_appt`
+    FOREIGN KEY (`appointment_id`) REFERENCES `APPOINTMENT` (`appointment_id`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_review_customer`
+    FOREIGN KEY (`customer_id`) REFERENCES `CUSTOMER` (`customer_id`)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_review_staff`
+    FOREIGN KEY (`staff_id`) REFERENCES `STAFF` (`staff_id`)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 

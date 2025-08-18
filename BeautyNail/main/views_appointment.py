@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, time, date
 import re
 from decimal import Decimal
 
-from .models import Appointment, Payment
+from .models import Appointment, Payment, Customer
 
 # ---------- constants ----------
 STATUS_CHOICES = ["scheduled", "completed", "cancelled", "pending"]
@@ -468,6 +468,12 @@ def appointment_edit(request, appointment_id):
 def appointment_finish(request, appointment_id):
     # Load appointment and basic context for display
     appt = get_object_or_404(Appointment, pk=appointment_id)
+    cust = None
+    loyalty_points = 0
+    if appt:
+        custid = appt.customer_id
+        cust = get_object_or_404(Customer, pk=custid) if custid else None
+        loyalty_points = cust.loyalty_points if cust else 0
 
     # Only allow finishing scheduled appts
     if (appt.status or '').lower() != 'scheduled':
@@ -517,6 +523,18 @@ def appointment_finish(request, appointment_id):
             transaction_id=transaction_id,
             payment_date=timezone.now(),
         )
+
+        # Loyalty points updating
+        try:
+            total_for_points = float(amount or 0) + float(tip_amount or 0)
+        except (TypeError, ValueError):
+            total_for_points = 0.0
+
+        earned_points = int(total_for_points)  # clear intent
+
+        cust.loyalty_points = (cust.loyalty_points or 0) + earned_points
+        cust.save(update_fields=['loyalty_points'])
+
 
         # Mark appointment completed
         appt.status = 'completed'

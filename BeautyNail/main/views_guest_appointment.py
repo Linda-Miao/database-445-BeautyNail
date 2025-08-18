@@ -89,6 +89,7 @@ def guest_appointment_add(request):
                 'phone': phone,
                 'user_id': user.id,
                 'is_active': True,
+                'loyalty_points': 0,
             }
         )
         if not created_customer:

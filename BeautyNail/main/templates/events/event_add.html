@@ -1,9 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
+{% comment %} {% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+  {% endfor %}
+{% endif %} {% endcomment %}
 <div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
   <div>
     <h2 class="text-center mb-4">Add New Event</h2>
-    <form method="post" action="{% url 'event_add' %}">
+    <form method="post" action="{% url 'event_add' %}" enctype="multipart/form-data">
       {% csrf_token %}
       <table>
         <tr>
@@ -25,15 +30,15 @@
           <td><input type="date" id="end_date" name="end_date"></td>
         </tr>
         <tr>
-          <td><label for="image">Image URL:</label></td>
-          <td><input type="text" id="image" name="image" placeholder="images\events\*.jpg"></td>
-        </tr>
-        <tr>
-          <td colspan="2" style="text-align:center; padding-top:12px;">
-            <button type="submit" class="btn btn-success me-2">Add Event</button>
-            <a href="{% url 'event_list' %}" class="btn btn-secondary">Cancel</a>
-          </td>
-        </tr>
+      <td><label for="image_file">Upload Image:</label></td>
+      <td><input type="file" id="image_file" name="image_file" accept="image/*" required></td>
+    </tr>
+    <tr>
+      <td colspan="2" style="text-align:center; padding-top:12px;">
+        <button type="submit" class="btn btn-success me-2">Add Event</button>
+        <a href="{% url 'event_list' %}" class="btn btn-secondary">Cancel</a>
+      </td>
+    </tr>
       </table>
     </form>
   </div>

@@ -199,4 +199,4 @@ def guest_appointment_success(request, appointment_id: int):
         ]
     }
 
-    return render(request, "appointments/guest_appointment_success.html", {"item": item})
+    return render(request, "appointments/guest_appointment_sucess.html", {"item": item})

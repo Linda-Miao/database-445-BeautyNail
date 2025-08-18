@@ -113,7 +113,7 @@ def get_positive_staff():
                 GROUP BY staff_id
             ) AS counts
         )
-        LIMIT 5
+        LIMIT 1
     """
     return Staff.objects.raw(sql)
 
@@ -128,7 +128,7 @@ def get_employee_of_the_month(year, month):
         AND a.status = 'completed'
         GROUP BY s.staff_id
         ORDER BY contribution DESC
-        LIMIT 5
+        LIMIT 1
     """
     params = [year, month]
     return Staff.objects.raw(sql, params)

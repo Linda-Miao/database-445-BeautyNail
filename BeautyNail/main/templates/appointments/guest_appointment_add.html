@@ -252,6 +252,11 @@
     // timeVal is "HH:MM:SS" and dateVal is "YYYY-MM-DD"
     const start = new Date(`${dateVal}T${timeVal}`);
     if (!isNaN(start)) {
+  $('#pTime').textContent = fmtTime(start);
+} else {
+  $('#pTime').textContent = activeTimeBtn ? activeTimeBtn.textContent.trim() : timeVal;
+}
+    if (!isNaN(start)) {
       const end = new Date(start.getTime() + totalMinutes * 60000);
       $('#pEnd').textContent = fmtTime(end);
     } else {

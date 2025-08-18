@@ -36,7 +36,14 @@
           <td>{{ it.customer_name }}</td>
           <td>{{ it.appointment_id }}</td>
           <td>{{ it.staff_name }}</td>
-          <td>{{ it.rating }}</td>
+          <td><div>
+      <span class="text-warning" style="letter-spacing:1px;">
+        {% for _ in "12345" %}
+          {% if forloop.counter <= it.rating %}★{% else %}☆{% endif %}
+        {% endfor %}
+      </span>
+      <span class="ms-1">({{ it.rating }}/5)</span>
+    </div></td>
           <td>{{ it.comment|default:"-" }}</td>
           <td>{{ it.review_date|date:"Y-m-d H:i" }}</td>
           <td class="actions-cell">

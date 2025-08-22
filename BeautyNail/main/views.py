@@ -63,7 +63,6 @@ def _top_testimonials(limit=6):
     return list(Review.objects.raw(sql, [limit]))
 
 def customer_reviews(request):
-    # Pass dynamic reviews if available; template falls back to static samples if empty
     reviews = _top_testimonials(6)
     return render(request, 'customer_reviews.html', {'reviews': reviews})
 

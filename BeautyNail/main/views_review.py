@@ -47,44 +47,6 @@ def reviews_list(request):
         'search_query': query,
     })
 
-# def review_add(request):
-#     if request.method == 'POST':
-#         customer_id = request.POST.get('customer_id', '').strip()
-#         appointment_id = request.POST.get('appointment_id', '').strip()
-#         staff_id = request.POST.get('staff_id', '').strip()
-#         rating = request.POST.get('rating')
-#         comment = request.POST.get('comment', '').strip() or None
-
-#         Review.objects.create(
-#             customer_id=customer_id,
-#             appointment_id=appointment_id,
-#             staff_id=staff_id,
-#             rating=rating,
-#             comment=comment,
-#             review_date=timezone.now(),
-#         )
-#         messages.success(request, 'Review added.')
-#         return redirect('reviews_list')
-
-#     return render(request, 'reviews/review_add.html')
-
-# def review_edit(request, review_id):
-#     item = get_object_or_404(Review, pk=review_id)
-
-#     if request.method == 'POST':
-#         item.customer_id = request.POST.get('customer_id', '').strip()
-#         item.appointment_id = request.POST.get('appointment_id', '').strip()
-#         item.staff_id = request.POST.get('staff_id', '').strip()
-#         item.rating = request.POST.get('rating')
-#         item.comment = request.POST.get('comment', '').strip() or None
-#         item.review_date = timezone.now()
-
-#         item.save()
-#         messages.success(request, 'Review updated.')
-#         return redirect('reviews_list')
-
-#     return render(request, 'reviews/review_edit.html', {'item': item})
-
 @login_required
 def review_delete(request, review_id):
     if request.method == 'POST':

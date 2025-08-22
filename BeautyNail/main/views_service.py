@@ -51,8 +51,7 @@ def service_add(request):
         base_price = request.POST.get('base_price')
         duration_minutes = request.POST.get('duration_minutes') or 0
         category = request.POST.get('category', '').strip()
-        # checkbox/radio/select -> expect "1" or "0"
-        requies_appointment = request.POST.get('requies_appointment', '1')  # default 1
+        requies_appointment = request.POST.get('requies_appointment', '1')  
         requies_appointment = 1 if str(requies_appointment) == '1' else 0
 
         Service.objects.create(

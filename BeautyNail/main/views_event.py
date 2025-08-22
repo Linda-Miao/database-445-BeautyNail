@@ -1,24 +1,20 @@
-# main/view_events.py
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db import connection
 from django.contrib import messages
-import os, uuid, imghdr, shutil
+import os, uuid, shutil
 from django.conf import settings
-from .models import Event  # the model above
+from .models import Event  
 
 
 IMAGES_SUBDIR = os.path.join('images', 'events')  # inside /static
 
 def _save_event_image_to_static(file_obj):
-    import os, uuid, imghdr
-    from django.conf import settings
-
     original = getattr(file_obj, 'name', 'upload')
     _, ext = os.path.splitext(original)
     ext = (ext or '.jpg').lower()
 
     filename = f"{uuid.uuid4().hex}{ext}"
-    # ✅ write into the app's static folder:
     static_dir = os.path.join(settings.BASE_DIR, 'main', 'static', IMAGES_SUBDIR)
     os.makedirs(static_dir, exist_ok=True)
 
@@ -27,11 +23,6 @@ def _save_event_image_to_static(file_obj):
         for chunk in file_obj.chunks():
             out.write(chunk)
 
-    if imghdr.what(dest_path) is None:
-        os.remove(dest_path)
-        raise ValueError("Uploaded file is not a valid image.")
-
-    # store relative path used by {% static %}
     return os.path.join(IMAGES_SUBDIR, filename).replace('\\', '/')
 
 def get_events_by_search(query):

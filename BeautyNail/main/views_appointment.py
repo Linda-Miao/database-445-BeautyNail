@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db import connection, transaction
 from django.contrib import messages
 from django.utils import timezone
-from django.contrib.auth.decorators import login_required  # optional; use if you want auth
+from django.contrib.auth.decorators import login_required 
 from datetime import datetime, timedelta, time, date
 import re
 from decimal import Decimal
@@ -306,7 +306,7 @@ def appointment_add(request):
         # prices + total + duration minutes
         price_map, total_amount, total_minutes = _services_price_amount_and_minutes(service_ids)
 
-        # basic validation for date & start_time
+        
         if not appointment_date or not start_time:
             messages.error(request, "Please pick a date and a time.")
             return render(request, 'appointments/appointment_add.html', {
@@ -445,7 +445,6 @@ def appointment_edit(request, appointment_id):
         messages.success(request, 'Appointment updated.')
         return redirect('appointment_list')
 
-    # GET — preselect like user page
     current_services = _load_appointment_service_rows(appt.appointment_id)
     normalized       = _norm_hms_str(appt.start_time)
     slot_values      = [t for (t, _) in time_slots]
@@ -485,7 +484,6 @@ def appointment_finish(request, appointment_id):
     if amount in (None, ''):
         amount = _calc_total_from_services(appt.appointment_id)
 
-    # Display names (read-only)
     with connection.cursor() as c:
         c.execute("""
             SELECT CONCAT(c.first_name,' ',c.last_name) AS customer_name,
@@ -504,7 +502,7 @@ def appointment_finish(request, appointment_id):
         tip_amount     = request.POST.get('tip_amount') or 0
         transaction_id = request.POST.get('transaction_id', '').strip() or None
 
-        # Basic validation
+       
         if not payment_method:
             messages.error(request, 'Please select a payment method.')
             return render(request, 'appointments/appointment_finish.html', {

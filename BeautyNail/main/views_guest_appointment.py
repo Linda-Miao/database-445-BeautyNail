@@ -11,7 +11,7 @@ from .views_appointment import (
     _staff_options,
     _service_options,
     _normalize_services,
-    _services_price_amount_and_minutes,  # <-- updated helper
+    _services_price_amount_and_minutes,  
     _norm_hms_str,                        # <-- normalize "9:00" => "09:00:00"
 )
 

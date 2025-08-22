@@ -81,7 +81,6 @@ def customer_edit(request, customer_id):
     if not row:
         return render(request, '404.html')
 
-    # Map row -> dict for template
     cust = {
         'customer_id': row[0],
         'first_name': row[1],
@@ -101,7 +100,7 @@ def customer_edit(request, customer_id):
     if request.method == 'POST':
         data = request.POST
 
-        # 1) Update the CUSTOMER row (raw SQL, same as your style)
+        # 1) Update the CUSTOMER row 
         with connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -140,7 +139,7 @@ def customer_edit(request, customer_id):
                 user = User.objects.get(pk=cust['user_id'])
 
                 if new_username:
-                    user.username = new_username  # may raise IntegrityError on duplicate
+                    user.username = new_username
                 # Always keep names/email in sync with CUSTOMER edits
                 user.first_name = first_name
                 user.last_name  = last_name
@@ -168,7 +167,6 @@ def customer_edit(request, customer_id):
                             [user.id, customer_id]
                         )
                 # If only one of username/password is provided, ignore creating user (silent)
-                # You can show an error if you prefer requiring both.
 
         except IntegrityError:
             # Username already taken (or other unique violation)
@@ -194,49 +192,6 @@ def customer_edit(request, customer_id):
 
     # GET
     return render(request, 'customers/customer_edit.html', {'customer': cust})
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM customer WHERE customer_id=%s", [customer_id])
-        row = cursor.fetchone()
-    if not row:
-        return render(request, '404.html')
-    if request.method == 'POST':
-        data = request.POST
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE customer
-                SET first_name=%s, last_name=%s, phone=%s, email=%s,
-                    date_of_birth=%s, allergies=%s, preferred_color=%s, loyalty_points=%s, is_active=%s
-                WHERE customer_id=%s
-                """,
-                [
-                    data['first_name'],
-                    data['last_name'],
-                    data['phone'],
-                    data.get('email') or None,
-                    data.get('date_of_birth') or None,
-                    data.get('allergies') or None,
-                    data.get('preferred_color') or None,
-                    data.get('loyalty_points') or 0,
-                    data.get('is_active') or 1,
-                    customer_id
-                ]
-            )
-        return redirect('customer_list')
-    customer = {
-        'customer_id': row[0],
-        'first_name': row[1],
-        'last_name': row[2],
-        'phone': row[3],
-        'email': row[4],
-        'date_of_birth': row[5].isoformat() if row[5] else '',
-        'allergies': row[6] or '',
-        'preferred_color': row[7] or '',
-        'loyalty_points': row[8],
-        'registration_date': row[9],
-        'is_active': row[10],
-    }
-    return render(request, 'customers/customer_edit.html', {'customer': customer})
 
 def customer_delete(request, customer_id):
     if request.method == 'POST':

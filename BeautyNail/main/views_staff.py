@@ -166,58 +166,11 @@ def staff_list(request):
         'search_query': query,
     })
 
-# def staff_add(request):
-#     if request.method == 'POST':
-#         first_name = request.POST.get('first_name', '').strip()
-#         last_name = request.POST.get('last_name', '').strip()
-#         phone = request.POST.get('phone', '').strip()
-#         email = request.POST.get('email', '').strip() or None
-#         hire_date = request.POST.get('hire_date')  # 'YYYY-MM-DD'
-#         position = request.POST.get('position', '').strip()
-#         commission_rate = request.POST.get('commission_rate')  # string -> Decimal ok
-#         specialty = request.POST.get('specialty', '').strip() or None
-#         is_active = request.POST.get('is_active') == '1'
 
-#         Staff.objects.create(
-#             first_name=first_name,
-#             last_name=last_name,
-#             phone=phone,
-#             email=email,
-#             hire_date=hire_date,
-#             position=position,
-#             commission_rate=commission_rate,
-#             specialty=specialty,
-#             is_active=is_active,
-#         )
-#         messages.success(request, 'Staff member added.')
-#         return redirect('staff_list')
-
-#     return render(request, 'staffs/staff_add.html')
-
-# def staff_edit(request, staff_id):
-#     staff = get_object_or_404(Staff, pk=staff_id)
-
-#     if request.method == 'POST':
-#         staff.first_name = request.POST.get('first_name', '').strip()
-#         staff.last_name = request.POST.get('last_name', '').strip()
-#         staff.phone = request.POST.get('phone', '').strip()
-#         staff.email = (request.POST.get('email', '').strip() or None)
-#         staff.hire_date = request.POST.get('hire_date')  # 'YYYY-MM-DD'
-#         staff.position = request.POST.get('position', '').strip()
-#         staff.commission_rate = request.POST.get('commission_rate')
-#         staff.specialty = (request.POST.get('specialty', '').strip() or None)
-#         staff.is_active = (request.POST.get('is_active') == '1')
-
-#         staff.save()
-#         messages.success(request, 'Staff member updated.')
-#         return redirect('staff_list')
-
-#     return render(request, 'staffs/staff_edit.html', {'staff': staff})
 def staff_add(request):
     if request.method == 'POST':
         data = request.POST
 
-        # 1) Insert STAFF via raw SQL
         with connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -240,7 +193,7 @@ def staff_add(request):
             )
             staff_id = cursor.lastrowid
 
-        # 2) Optional: create auth_user and link
+        # create auth_user and link
         username = (data.get('username') or '').strip()
         password = (data.get('password') or '').strip()
         if username and password:
@@ -250,7 +203,7 @@ def staff_add(request):
                 first_name=data['first_name'],
                 last_name=data['last_name'],
                 email=data.get('email') or '',
-                is_staff=True,   # staff can access admin/staff-only pages
+                is_staff=True,   
                 is_active=True,
             )
             with connection.cursor() as cursor:
@@ -308,7 +261,6 @@ def staff_edit(request, staff_id):
     if request.method == 'POST':
         data = request.POST
 
-        # 1) Update STAFF via raw SQL
         with connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -332,7 +284,7 @@ def staff_edit(request, staff_id):
                 ]
             )
 
-        # 2) Sync / create auth_user
+        #  Sync / create auth_user
         new_username = (data.get('username') or '').strip()
         new_password = (data.get('password') or '').strip()
 
@@ -345,7 +297,7 @@ def staff_edit(request, staff_id):
                 user = User.objects.get(pk=staff['user_id'])
 
                 if new_username:
-                    user.username = new_username  # can raise IntegrityError
+                    user.username = new_username  
                 user.first_name = first_name
                 user.last_name  = last_name
                 user.email      = email

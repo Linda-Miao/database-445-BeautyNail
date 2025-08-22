@@ -162,7 +162,6 @@ def _norm_hms_str(val: str) -> str:
 
     return ""
 
-# Consistent time slots used in admin edit template
 ADMIN_TIME_SLOTS = [
     ("09:00:00", "9:00 AM"),
     ("10:30:00", "10:30 AM"),
@@ -367,7 +366,7 @@ def appointment_edit(request, appointment_id):
     cust_opts  = _customer_options()
     svc_opts   = _service_options()
 
-    # Same time slots as user flow
+    
     time_slots = [
         ("09:00:00", "9:00 AM"),
         ("10:30:00", "10:30 AM"),
@@ -405,7 +404,7 @@ def appointment_edit(request, appointment_id):
                 'status_choices': STATUS_CHOICES,
             })
 
-        # Services + totals (includes total_minutes now)
+        # Services + totals
         raw_service_ids = request.POST.getlist('service_ids[]')
         raw_colors      = request.POST.getlist('polish_colors[]')
         service_ids, colors = _normalize_services(raw_service_ids, raw_colors)
@@ -512,7 +511,7 @@ def appointment_finish(request, appointment_id):
                 'amount': amount,
             })
 
-        # Create payment (ORM)
+        # Create payment
         Payment.objects.create(
             appointment_id=appt.appointment_id,
             payment_method=payment_method,
@@ -528,7 +527,7 @@ def appointment_finish(request, appointment_id):
         except (TypeError, ValueError):
             total_for_points = 0.0
 
-        earned_points = int(total_for_points)  # clear intent
+        earned_points = int(total_for_points)  
 
         cust.loyalty_points = (cust.loyalty_points or 0) + earned_points
         cust.save(update_fields=['loyalty_points'])

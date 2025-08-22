@@ -5,7 +5,6 @@ from django.db import connection, IntegrityError
 from django.contrib.auth.models import User
 
 
-# Django support insert, edit, delete using ORM so we only implement the insert, edit, delete function using raw query only for customer table
 def customer_add(request):
     if request.method == 'POST':
         data = request.POST
@@ -100,7 +99,7 @@ def customer_edit(request, customer_id):
     if request.method == 'POST':
         data = request.POST
 
-        # 1) Update the CUSTOMER row 
+        # Update the CUSTOMER row 
         with connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -124,7 +123,7 @@ def customer_edit(request, customer_id):
                 ]
             )
 
-        # 2) Sync / create the auth user if requested
+        # Sync / create the auth user if requested
         new_username = (data.get('username') or '').strip()
         new_password = (data.get('password') or '').strip()
 
@@ -140,7 +139,7 @@ def customer_edit(request, customer_id):
 
                 if new_username:
                     user.username = new_username
-                # Always keep names/email in sync with CUSTOMER edits
+                
                 user.first_name = first_name
                 user.last_name  = last_name
                 user.email      = email

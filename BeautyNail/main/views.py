@@ -5,7 +5,6 @@ from .models import Customer, Review, Staff, Service, Event
 from django.db import connection
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-# Create your views here.
 
 def _active_events(limit=4):
     sql = """

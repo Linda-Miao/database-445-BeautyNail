@@ -95,10 +95,10 @@ def my_appointment_add(request):
         raw_colors      = request.POST.getlist('polish_colors[]')
         service_ids, polish_colors = _normalize_services(raw_service_ids, raw_colors)
 
-        # NEW: prices + total + summed duration
+        # prices + total + summed duration
         price_map, total_amount, total_minutes = _services_price_amount_and_minutes(service_ids)
 
-        # Compute end_time from durations (fallback 90 if none)
+        # Compute end_time from durations
         start_dt = datetime.strptime(f"{appointment_date} {start_time}", "%Y-%m-%d %H:%M:%S")
         minutes  = total_minutes
         end_time = (start_dt + timedelta(minutes=minutes)).strftime("%H:%M:%S")
@@ -186,10 +186,10 @@ def my_appointment_edit(request, appointment_id):
         raw_colors      = request.POST.getlist('polish_colors[]')
         service_ids, colors = _normalize_services(raw_service_ids, raw_colors)
 
-        # NEW: prices + total + summed duration
+        # prices + total + summed duration
         price_map, total_amount, total_minutes = _services_price_amount_and_minutes(service_ids)
 
-        # Compute end_time from durations (fallback 90 if none)
+        # Compute end_time from durations
         start_dt = datetime.strptime(f"{appointment_date} {start_time}", "%Y-%m-%d %H:%M:%S")
         minutes  = total_minutes
         end_time = (start_dt + timedelta(minutes=minutes)).strftime("%H:%M:%S")
@@ -289,7 +289,6 @@ def my_review_edit(request, review_id):
     customer = get_object_or_404(Customer, user_id=request.user.id)
     item = get_object_or_404(Review, pk=review_id, customer_id=customer.customer_id)
 
-    # Optional: verify the appointment is still completed
     appt = get_object_or_404(Appointment, pk=item.appointment_id, customer_id=customer.customer_id)
 
     if request.method == 'POST':

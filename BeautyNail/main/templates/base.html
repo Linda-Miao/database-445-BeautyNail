@@ -12,7 +12,7 @@
     <style>
       body { background-color: #f8f9fa; }
 
-      /* ===== New Gradient Header ===== */
+      /* ===== Header ===== */
       .header {
         background: linear-gradient(135deg, #e91e63, #ad1457);
         padding-bottom:3.75rem;
@@ -26,7 +26,6 @@
       .header h1 { font-size: 3rem; margin: 0; }
       .header .tagline { font-size: 1.3rem; font-style: italic; opacity: 0.9; margin-top: 0.5rem; }
 
-      /* ===== Keep old nav styles (dynamic Django nav below) ===== */
       .nav-link { color:#e91e63 !important; font-weight:bold; padding:.4rem 1rem; border-radius:9999px; transition:background-color .15s ease,color .15s ease; }
       .nav-link.active { background-color:#e91e63; color:#fff !important; border-radius:9999px; box-shadow:0 6px 16px rgba(233,30,99,.25); }
       .nav-link:not(.active):hover { background-color:rgba(233,30,99,.08); }
@@ -108,7 +107,7 @@
   </head>
 
   <body class="page-wrapper d-flex flex-column min-vh-100">
-    <!-- New Header -->
+    <!-- Header -->
     <header class="header">
       <h1>💅 BeautyNailNet Database Project</h1>
       <p class="tagline">Comprehensive Database Application for Nail Salon Management</p>
@@ -116,6 +115,7 @@
 
     <nav class="nav mb-4 d-flex">
       <div class="d-flex">
+<!-- uncomment this if want to show message -->
 <!-- {% if messages %}
   {% for message in messages %}
     <div class="alert alert-{{ message.tags }}">{{ message }}</div>
@@ -184,7 +184,7 @@
       {% block content %}{% endblock %}
     </main>
 
-    <!-- New Footer -->
+    <!-- Footer -->
     <footer class="footer">
       <div class="footer-content">
         <h3>Connect With Us</h3>

@@ -37,15 +37,15 @@
         <button type="submit" class="btn btn-primary">Update Review</button>
         <a href="{% url 'my_appointments' %}" class="btn btn-secondary ms-2">Cancel</a>
 
-        <!-- Delete button posts to a different URL -->
-<button type="submit"
-        class="btn btn-danger ms-2"
-        formaction="{% url 'my_review_delete' item.review_id %}"
-        formmethod="post"
-        formnovalidate
-        onclick="return confirm('Delete this review? This cannot be undone.');">
-  Delete Review
-</button>
+        
+        <button type="submit"
+          class="btn btn-danger ms-2"
+          formaction="{% url 'my_review_delete' item.review_id %}"
+          formmethod="post"
+          formnovalidate
+          onclick="return confirm('Delete this review? This cannot be undone.');">
+          Delete Review
+        </button>
       </div>
     </form>
   </div>

@@ -4,7 +4,7 @@
 
 {% block extra_head %}
 <style>
-/* ===== Guest booking (one-line rules) ===== */
+/* ===== Guest booking  ===== */
 .page-title{margin-bottom:1rem;}
 .page-intro{text-align:center;margin:1rem 0 2rem 0;}
 .page-intro h2{color:#2c2c2c;font-size:2.5rem;margin-bottom:1rem;}
@@ -24,7 +24,7 @@
 @media (max-width:1200px){.booking-layout{grid-template-columns:520px 520px;gap:.875rem;max-width:1080px;}}
 @media (max-width:992px){.booking-layout{grid-template-columns:1fr;max-width:640px;}}
 
-/* ===== Simple popup (no overlay) with summary ===== */
+/* ===== Simple popup ===== */
 .popup{position:fixed;top:14vh;left:50%;transform:translateX(-50%);z-index:1050;display:none;}
 .popup.show{display:block;}
 .popup-card{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.18);width:min(680px,92vw);padding:1rem;}
@@ -45,7 +45,7 @@
   </div>
 
   <div class="booking-layout">
-    <!-- LEFT: Calendar + Time (reusing your picker + JS) -->
+    <!-- LEFT: Calendar + Time -->
     <div class="calendar-section rounded-4 shadow-sm">
       <h3 class="calendar-title">Pick a date & time</h3>
 
@@ -70,7 +70,7 @@
       </div>
     </div>
 
-    <!-- RIGHT: Booking form -->
+    <!-- Booking form -->
     <div class="booking-form">
       <h3>Book Your Appointment</h3>
 
@@ -84,7 +84,7 @@
         <input type="email" name="email"     class="form-input" placeholder="Email Address *" required>
         <input type="tel"   name="phone"     class="form-input" placeholder="Phone Number" required>
 
-        <!-- Services (same widget as member add page; on one line) -->
+        <!-- Services  -->
         <label class="form-label">Services</label>
         <div id="services-list">
           <div class="service-row">
@@ -158,7 +158,7 @@
   </div>
 </div>
 
-<!-- Use the same JS your member page uses -->
+
 <script src="{% static 'js/appointments.js' %}" defer></script>
 
 <script>
@@ -175,7 +175,7 @@
   const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
 
   const fmtDate = iso => { if(!iso) return ''; const [y,m,d]=iso.split('-'); return `${m}/${d}/${y}`; };
-  const fmtTime = d => {                           // NEW: time formatter for end time
+  const fmtTime = d => {                           
     if (!(d instanceof Date) || isNaN(d)) return '—';
     let h = d.getHours(), m = d.getMinutes();
     const ampm = h >= 12 ? 'PM' : 'AM';
@@ -189,7 +189,7 @@
     // Validate visible inputs
     if(!form.reportValidity()) return;
 
-    // Ensure date & time chosen (hidden inputs)
+    // Ensure date & time chosen 
     const dateVal = ($('#appointment_date').value||'').trim();
     const timeVal = ($('#start_time').value||'').trim();
     if(!dateVal || !timeVal){ alert('Please pick a date and a time.'); return; }
@@ -232,7 +232,7 @@
       list.appendChild(li);
     }
 
-    // === NEW: compute total duration and end time ===
+    // compute total duration and end time 
     let totalMinutes = 0;
     if (!unsure) {
       rows.forEach(r=>{

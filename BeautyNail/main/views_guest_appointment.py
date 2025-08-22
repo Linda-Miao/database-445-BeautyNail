@@ -59,7 +59,7 @@ def guest_appointment_add(request):
                 'staff_opts': staff_opts, 'svc_opts': svc_opts,
             })
 
-        # Services (multi-select with "unsure")
+        # Services 
         raw_service_ids = request.POST.getlist('service_ids[]')
         raw_colors      = request.POST.getlist('polish_colors[]')
         unsure_selected = any((sid or '').strip() == 'unsure' for sid in raw_service_ids)
@@ -71,16 +71,16 @@ def guest_appointment_add(request):
         # Compute price + total + summed duration (minutes)
         price_map, total_amount, total_minutes = _services_price_amount_and_minutes(service_ids)
 
-        # 1) Auth user (username=email)
+        # Auth user (username=email)
         user, created_user = User.objects.get_or_create(
             username=email,
             defaults={'email': email, 'first_name': first_name, 'last_name': last_name}
         )
         if created_user:
-            user.set_password(phone)   # password = phone number (as in your original flow)
+            user.set_password(phone)   # password = phone number 
             user.save()
 
-        # 2) Customer (link to auth user)
+        # Customer (link to auth user)
         customer, created_customer = Customer.objects.get_or_create(
             email=email,
             defaults={
@@ -103,7 +103,7 @@ def guest_appointment_add(request):
                 customer.last_name = last_name
             customer.save()
 
-        # 3) Appointment — end_time from summed duration (fallback 90 mins)
+        # Appointment — end_time from summed duration (fallback 90 mins)
         start_dt = datetime.strptime(f"{appointment_date} {start_time}", "%Y-%m-%d %H:%M:%S")
         minutes  = total_minutes
         end_time = (start_dt + timedelta(minutes=minutes)).strftime("%H:%M:%S")

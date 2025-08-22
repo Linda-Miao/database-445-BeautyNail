@@ -127,7 +127,7 @@ class Customer(models.Model):
     preferred_color = models.CharField(max_length=50, blank=True, null=True)
     loyalty_points  = models.IntegerField(blank=True, null=True)
     registration_date = models.DateField(blank=True, null=True)
-    is_active       = models.IntegerField(blank=True, null=True)  # keep to match DB
+    is_active       = models.IntegerField(blank=True, null=True)  
 
     class Meta:
         managed = False
@@ -239,28 +239,13 @@ class Service(models.Model):
         db_table = 'service'
 
 
-# class Staff(models.Model):
-#     staff_id = models.AutoField(primary_key=True)
-#     first_name = models.CharField(max_length=50)
-#     last_name = models.CharField(max_length=50)
-#     phone = models.CharField(max_length=15)
-#     email = models.CharField(max_length=100)
-#     hire_date = models.DateField()
-#     position = models.CharField(max_length=50)
-#     commission_rate = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-#     specialty = models.CharField(max_length=100, blank=True, null=True)
-#     is_active = models.IntegerField(blank=True, null=True)
-
-#     class Meta:
-#         managed = False
-#         db_table = 'staff'
 class Staff(models.Model):
     staff_id = models.AutoField(primary_key=True)
 
     # NEW: link to auth_user via staff.user_id
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.DO_NOTHING,   # DB constraint: ON DELETE SET NULL (OK to keep DO_NOTHING here)
+        on_delete=models.DO_NOTHING,   
         db_column='user_id',
         null=True, blank=True,
         related_name='staffs'
@@ -283,7 +268,6 @@ class Staff(models.Model):
 class Event(models.Model):
     events_id = models.AutoField(primary_key=True)
     event_name = models.CharField(max_length=100)
-    # NOTE: the DB column is "decription" (typo). Map it explicitly:
     description = models.TextField(null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)

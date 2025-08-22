@@ -54,7 +54,6 @@ urlpatterns = [
     path('my_appointments/', views_my_appointment.my_appointment_list, name='my_appointments'),
     path('my_appointments/add/', views_my_appointment.my_appointment_add, name='my_appointment_add'),
     path('my_appointments/<int:appointment_id>/edit/', views_my_appointment.my_appointment_edit, name='my_appointment_edit'),
-    #path('guest_appointments/', views_guest_appointment.guest_appointment_add, name='guest_appointments_add'),
     path('staff/my_appointments/', views_staff.staff_my_appointments, name='staff_my_appointments'),
 
 
@@ -66,10 +65,9 @@ urlpatterns = [
 
     # Review paths
     path('reviews/', views_review.reviews_list, name='reviews_list'),
-    # path('reviews/add/', views_review.review_add, name='review_add'),
-    # path('reviews/<int:review_id>/edit/', views_review.review_edit, name='review_edit'),
     path('reviews/<int:review_id>/delete/', views_review.review_delete, name='review_delete'),
-    # NEW (customer review add/edit)
+    
+    # (customer review add/edit)
     path('my_reviews/<int:appointment_id>/review/add/', views_my_appointment.my_review_add, name='my_review_add'),
     path('my_reviews/<int:review_id>/edit/', views_my_appointment.my_review_edit, name='my_review_edit'),
     path('my_reviews/<int:review_id>/delete/', views_review.my_review_delete, name='my_review_delete'),

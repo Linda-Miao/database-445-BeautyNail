@@ -119,6 +119,7 @@ Service Catalog Interface:
 - User authentication and role-based access control
 
 === CONTACT INFORMATION ===
+
 Team 7 - TCSS445 Summer 2025
 - Bao Thinh Diep
 - Linda Miao
